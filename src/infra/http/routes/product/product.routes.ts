@@ -1,5 +1,5 @@
-import { makeCreateProductsController } from "@/infra/factories/product/make-products-controller";
-import { makeListProductsController } from "@/infra/factories/product/make-list-products-controller";
+import { makeCreateProductsController } from "@/infra/factories/product/create/make-create-products-controller";
+import { makeListProductsController } from "@/infra/factories/product/list/make-list-products-controller";
 import { Router } from "express";
 
 const productRoutes = Router();
