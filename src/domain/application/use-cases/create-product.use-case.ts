@@ -1,8 +1,7 @@
-import { Either, right } from "@/core/either";
+import { Either, left, right } from "@/core/either";
 import { ProductRepository } from "../repositories/product-repository";
 import { Product } from "@/domain/enterprise/entities/product";
 import { ProductAlreadyExistsError } from "./errors/product-already-exists.error";
-import { InvalidProductDataError } from "./errors/invalid-product-data.error";
 
 interface CreateProductUseCaseRequest {
   name: string;
@@ -13,7 +12,7 @@ interface CreateProductUseCaseRequest {
 }
 
 type CreateProductUseCaseResponse = Either<
-  ProductAlreadyExistsError | InvalidProductDataError,
+  ProductAlreadyExistsError,
   {
     product: Product;
   }
@@ -29,6 +28,12 @@ export class CreateProductUseCase {
     visible,
     order,
   }: CreateProductUseCaseRequest): Promise<CreateProductUseCaseResponse> {
+    const existingProduct = await this.productRepository.findByName(name);
+
+    if (existingProduct) {
+      return left(new ProductAlreadyExistsError(name));
+    }
+
     const product = Product.create({
       name,
       price,

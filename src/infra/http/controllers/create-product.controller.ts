@@ -3,10 +3,10 @@ import { CreateProductUseCase } from "@/domain/application/use-cases/create-prod
 import {
   CreateProductBody,
   createProductBodySchema,
-} from "../zod-schemas/product.schema";
+} from "../schemas/product.schema";
 import { ProductAlreadyExistsError } from "@/domain/application/use-cases/errors/product-already-exists.error";
-import { InvalidProductDataError } from "@/domain/application/use-cases/errors/invalid-product-data.error";
 import { BadRequestError } from "@/domain/application/use-cases/errors/bad-request.error";
+import { ProductPresenter } from "../presenters/product.presenter";
 
 export class ProductsController {
   constructor(private createProductUseCase: CreateProductUseCase) {}
@@ -25,11 +25,6 @@ export class ProductsController {
             message: error.message,
           });
 
-        case InvalidProductDataError:
-          return res.status(422).json({
-            message: error.message,
-          });
-
         case BadRequestError:
           return res.status(400).json({
             message: error.message,
@@ -42,7 +37,10 @@ export class ProductsController {
       }
     }
 
-    const product = result.value;
-    return res.status(201).json({ product });
+    const { product } = result.value;
+
+    return res.status(201).json({
+      product: ProductPresenter.toHTTP(product),
+    });
   }
 }
