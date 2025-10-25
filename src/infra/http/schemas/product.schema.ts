@@ -21,3 +21,7 @@ export const createProductBodySchema = z.object({
 });
 
 export type CreateProductBody = z.infer<typeof createProductBodySchema>;
+
+export const updateProductBodySchema = createProductBodySchema.partial();
+
+export type UpdateProductBody = z.infer<typeof updateProductBodySchema>;
