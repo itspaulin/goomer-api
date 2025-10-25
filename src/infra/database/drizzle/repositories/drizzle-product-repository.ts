@@ -62,13 +62,19 @@ export class DrizzleProductRepository implements ProductRepository {
   async update(id: string, data: Partial<Product>): Promise<Product> {
     const updateData = DrizzleProductMapper.toUpdateData(data);
 
-    const setClauses = Object.keys(updateData)
-      .map((key) => `${key} = ${updateData[key]}`)
-      .join(", ");
+    const { updated_at, ...restData } = updateData;
+
+    const setClause = Object.entries(restData)
+      .map(([key, value], index) =>
+        index === 0
+          ? sql`${sql.identifier(key)} = ${value}`
+          : sql`, ${sql.identifier(key)} = ${value}`
+      )
+      .reduce((acc, curr) => sql`${acc}${curr}`);
 
     const result = await db.execute(sql`
       UPDATE products 
-      SET ${sql.raw(setClauses)}
+      SET ${setClause}, updated_at = NOW()
       WHERE id = ${parseInt(id)}
       RETURNING *
     `);
@@ -82,7 +88,7 @@ export class DrizzleProductRepository implements ProductRepository {
 
   async delete(id: string): Promise<void> {
     await db.execute(sql`
-    DELETE FROM products WHERE id = ${parseInt(id)}
-  `);
+      DELETE FROM products WHERE id = ${parseInt(id)}
+    `);
   }
 }
