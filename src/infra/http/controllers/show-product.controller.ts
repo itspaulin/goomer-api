@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { ShowProductUseCase } from "@/domain/application/use-cases/show-product.use-case";
 
-export class ProductsController {
+export class ShowProductController {
   constructor(private showProductUseCase: ShowProductUseCase) {}
 
   async show(req: Request<{ id: string }>, res: Response): Promise<Response> {
