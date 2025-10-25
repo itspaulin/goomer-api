@@ -1,22 +1,34 @@
 import { ProductRepository } from "@/domain/application/repositories/product-repository";
 import { Product } from "@/domain/enterprise/entities/product";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { products } from "../../drizzle/schemas/products";
 import { db } from "../../index";
 import { DrizzleProductMapper } from "../mappers/drizzle-product.mapper";
 
 export class DrizzleProductRepository implements ProductRepository {
   async create(product: Product): Promise<Product> {
-    const [created] = await db
-      .insert(products)
-      .values(DrizzleProductMapper.toDrizzle(product))
-      .returning();
+    const data = DrizzleProductMapper.toDrizzle(product);
 
+    const result = await db.execute(sql`
+    INSERT INTO products (name, price, category, visible, "order", created_at, updated_at)
+    VALUES (
+      ${data.name}, 
+      ${data.price}, 
+      ${data.category}, 
+      ${data.visible}, 
+      ${data.order}, 
+      NOW(), 
+      NOW()
+    )
+    RETURNING *
+  `);
+
+    const created = result[0];
     if (!created) {
       throw new Error("Failed to create product");
     }
 
-    return DrizzleProductMapper.toDomain(created);
+    return DrizzleProductMapper.toDomain(created as any);
   }
 
   async findAll(): Promise<Product[]> {
