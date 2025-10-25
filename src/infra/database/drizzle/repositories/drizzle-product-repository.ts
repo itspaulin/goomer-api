@@ -2,7 +2,7 @@ import { ProductRepository } from "@/domain/application/repositories/product-rep
 import { Product } from "@/domain/enterprise/entities/product";
 import { eq } from "drizzle-orm";
 import { products } from "../../drizzle/schemas/products";
-import { db } from "../index";
+import { db } from "../../index";
 import { DrizzleProductMapper } from "../mappers/drizzle-product.mapper";
 
 export class DrizzleProductRepository implements ProductRepository {
