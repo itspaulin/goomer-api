@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { DeleteProductUseCase } from "@/domain/application/use-cases/delete-product.use-case";
 
-export class ProductsController {
+export class DeleteProductController {
   constructor(private deleteProductUseCase: DeleteProductUseCase) {}
 
   async delete(req: Request<{ id: string }>, res: Response): Promise<Response> {
