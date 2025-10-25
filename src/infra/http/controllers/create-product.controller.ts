@@ -8,7 +8,7 @@ import { ProductAlreadyExistsError } from "@/domain/application/use-cases/errors
 import { BadRequestError } from "@/domain/application/use-cases/errors/bad-request.error";
 import { ProductPresenter } from "../presenters/product.presenter";
 
-export class ProductsController {
+export class CreateProductController {
   constructor(private createProductUseCase: CreateProductUseCase) {}
 
   async create(req: Request, res: Response): Promise<Response> {
