@@ -3,14 +3,24 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "start": "bun run src/infra/main.ts",
+    "dev": "bun run --watch src/infra/main.ts",
+    "migrate": "bunx drizzle-kit generate && bunx drizzle-kit push"
+  },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/express": "^5.0.4",
     "drizzle-kit": "^0.31.5"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "drizzle-orm": "^0.44.7"
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.7",
+    "express": "^5.1.0",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.12"
   }
 }
