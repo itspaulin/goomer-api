@@ -5,7 +5,6 @@ export default defineConfig({
   schema: "./src/infra/database/drizzle/*",
   out: "./drizzle",
   dialect: "postgresql",
-  driver: "pglite",
   dbCredentials: {
     url: env.DATABASE_URL,
   },
