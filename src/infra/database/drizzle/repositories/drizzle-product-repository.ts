@@ -33,51 +33,56 @@ export class DrizzleProductRepository implements ProductRepository {
 
   async findAll(): Promise<Product[]> {
     const result = await db.execute(sql`
-    SELECT * FROM products
-  `);
+      SELECT * FROM products
+    `);
 
     return result.map((raw) => DrizzleProductMapper.toDomain(raw as any));
   }
 
   async findById(id: string): Promise<Product | null> {
-    const [result] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, parseInt(id)))
-      .limit(1);
+    const result = await db.execute(sql`
+      SELECT * FROM products WHERE id = ${parseInt(id)} LIMIT 1
+    `);
 
-    if (!result) return null;
+    if (!result[0]) return null;
 
-    return DrizzleProductMapper.toDomain(result);
+    return DrizzleProductMapper.toDomain(result[0] as any);
   }
 
   async findByName(name: string): Promise<Product | null> {
-    const [result] = await db
-      .select()
-      .from(products)
-      .where(eq(products.name, name))
-      .limit(1);
+    const result = await db.execute(sql`
+      SELECT * FROM products WHERE name = ${name} LIMIT 1
+    `);
 
-    if (!result) return null;
+    if (!result[0]) return null;
 
-    return DrizzleProductMapper.toDomain(result);
+    return DrizzleProductMapper.toDomain(result[0] as any);
   }
 
   async update(id: string, data: Partial<Product>): Promise<Product> {
-    const [updated] = await db
-      .update(products)
-      .set(DrizzleProductMapper.toUpdateData(data))
-      .where(eq(products.id, parseInt(id)))
-      .returning();
+    const updateData = DrizzleProductMapper.toUpdateData(data);
 
-    if (!updated) {
+    const setClauses = Object.keys(updateData)
+      .map((key) => `${key} = ${updateData[key]}`)
+      .join(", ");
+
+    const result = await db.execute(sql`
+      UPDATE products 
+      SET ${sql.raw(setClauses)}
+      WHERE id = ${parseInt(id)}
+      RETURNING *
+    `);
+
+    if (!result[0]) {
       throw new Error("Failed to update product");
     }
 
-    return DrizzleProductMapper.toDomain(updated);
+    return DrizzleProductMapper.toDomain(result[0] as any);
   }
 
   async delete(id: string): Promise<void> {
-    await db.delete(products).where(eq(products.id, parseInt(id)));
+    await db.execute(sql`
+    DELETE FROM products WHERE id = ${parseInt(id)}
+  `);
   }
 }
