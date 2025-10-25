@@ -32,8 +32,11 @@ export class DrizzleProductRepository implements ProductRepository {
   }
 
   async findAll(): Promise<Product[]> {
-    const results = await db.select().from(products);
-    return results.map(DrizzleProductMapper.toDomain);
+    const result = await db.execute(sql`
+    SELECT * FROM products
+  `);
+
+    return result.map((raw) => DrizzleProductMapper.toDomain(raw as any));
   }
 
   async findById(id: string): Promise<Product | null> {
