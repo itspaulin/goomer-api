@@ -6,13 +6,18 @@
   "scripts": {
     "start": "bun run src/infra/main.ts",
     "dev": "nodemon --exec bun src/infra/main.ts",
-    "migrate": "bunx drizzle-kit generate && bunx drizzle-kit push"
+    "migrate": "bunx drizzle-kit generate && bunx drizzle-kit push",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:run": "vitest run"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/express": "^5.0.4",
     "drizzle-kit": "^0.31.5",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "vitest": "^4.0.3"
   },
   "peerDependencies": {
     "typescript": "^5"
