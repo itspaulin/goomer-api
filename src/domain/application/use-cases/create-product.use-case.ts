@@ -1,6 +1,8 @@
 import { Either, right } from "@/core/either";
 import { ProductRepository } from "../repositories/product-repository";
 import { Product } from "@/domain/enterprise/entities/product";
+import { ProductAlreadyExistsError } from "./errors/product-already-exists.error";
+import { InvalidProductDataError } from "./errors/invalid-product-data.error";
 
 interface CreateProductUseCaseRequest {
   name: string;
@@ -11,7 +13,7 @@ interface CreateProductUseCaseRequest {
 }
 
 type CreateProductUseCaseResponse = Either<
-  null,
+  ProductAlreadyExistsError | InvalidProductDataError,
   {
     product: Product;
   }
