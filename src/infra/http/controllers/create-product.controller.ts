@@ -3,7 +3,7 @@ import { CreateProductUseCase } from "@/domain/application/use-cases/create-prod
 import {
   CreateProductBody,
   createProductBodySchema,
-} from "../schemas/product.schema";
+} from "../zod-schemas/product.schema";
 import { ProductAlreadyExistsError } from "@/domain/application/use-cases/errors/product-already-exists.error";
 import { InvalidProductDataError } from "@/domain/application/use-cases/errors/invalid-product-data.error";
 import { BadRequestError } from "@/domain/application/use-cases/errors/bad-request.error";

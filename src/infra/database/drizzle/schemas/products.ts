@@ -26,3 +26,6 @@ export const products = pgTable("products", {
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
+
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
