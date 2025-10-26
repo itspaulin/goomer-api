@@ -5,7 +5,7 @@ import { ListPromotionsUseCase } from "@/domain/application/use-cases/list-promo
 export class ListPromotionsController {
   constructor(private listPromotionsUseCase: ListPromotionsUseCase) {}
 
-  async list(req: Request, res: Response): Promise<Response> {
+  async list(res: Response): Promise<Response> {
     const result = await this.listPromotionsUseCase.execute();
 
     if (result.isLeft()) {
