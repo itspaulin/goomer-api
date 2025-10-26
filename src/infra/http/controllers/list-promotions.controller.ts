@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { ListPromotionsUseCase } from "@/domain/application/use-cases/list-promotions.use-case";
 
-export class PromotionsController {
+export class ListPromotionsController {
   constructor(private listPromotionsUseCase: ListPromotionsUseCase) {}
 
   async list(req: Request, res: Response): Promise<Response> {

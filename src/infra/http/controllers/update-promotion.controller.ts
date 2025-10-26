@@ -6,7 +6,7 @@ import {
   updatePromotionBodySchema,
 } from "../schemas/promotion.schema";
 
-export class PromotionsController {
+export class UpdatePromotionController {
   constructor(private updatePromotionUseCase: UpdatePromotionUseCase) {}
 
   async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
