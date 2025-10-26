@@ -15,6 +15,13 @@
       "when": 1761428427776,
       "tag": "0001_redundant_nightcrawler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761486781400,
+      "tag": "0002_dear_blue_shield",
+      "breakpoints": true
     }
   ]
 }

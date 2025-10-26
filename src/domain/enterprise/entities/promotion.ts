@@ -3,6 +3,7 @@ import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { Optional } from "@/core/types/optional";
 
 export interface PromotionProps {
+  product_id: number;
   description: string;
   promotional_price: number;
   days: string[];
@@ -13,6 +14,10 @@ export interface PromotionProps {
 }
 
 export class Promotion extends Entity<PromotionProps> {
+  get product_id() {
+    return this.props.product_id;
+  }
+
   get description() {
     return this.props.description;
   }
@@ -43,6 +48,11 @@ export class Promotion extends Entity<PromotionProps> {
 
   private touch() {
     this.props.updated_at = new Date();
+  }
+
+  set product_id(product_id: number) {
+    this.props.product_id = product_id;
+    this.touch();
   }
 
   set description(description: string) {

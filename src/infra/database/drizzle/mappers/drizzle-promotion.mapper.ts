@@ -4,6 +4,7 @@ import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 export class DrizzlePromotionMapper {
   static toDrizzle(promotion: Promotion) {
     return {
+      product_id: promotion.product_id,
       description: promotion.description,
       promotional_price: promotion.promotional_price.toString(),
       days: JSON.stringify(promotion.days),
@@ -15,6 +16,7 @@ export class DrizzlePromotionMapper {
   static toDomain(raw: any): Promotion {
     return Promotion.create(
       {
+        product_id: raw.product_id,
         description: raw.description,
         promotional_price: parseFloat(raw.promotional_price),
         days: JSON.parse(raw.days),

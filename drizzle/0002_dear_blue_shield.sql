@@ -1,0 +1,2 @@
+ALTER TABLE "promotions" ADD COLUMN "product_id" integer NOT NULL;--> statement-breakpoint
+ALTER TABLE "promotions" ADD CONSTRAINT "promotions_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;
