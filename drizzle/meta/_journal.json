@@ -8,6 +8,13 @@
       "when": 1761395614936,
       "tag": "0000_military_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1761428427776,
+      "tag": "0001_redundant_nightcrawler",
+      "breakpoints": true
     }
   ]
 }

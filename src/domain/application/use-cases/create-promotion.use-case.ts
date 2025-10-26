@@ -1,6 +1,7 @@
 import { PromotionRepository } from "../repositories/promotion-repository";
 import { Promotion, PromotionProps } from "../../enterprise/entities/promotion";
 import { Either, right } from "@/core/either";
+import { BadRequestError } from "./errors/bad-request.error";
 
 interface CreatePromotionUseCaseRequest {
   description: string;
