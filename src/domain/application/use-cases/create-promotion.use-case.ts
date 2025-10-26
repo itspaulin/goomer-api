@@ -4,6 +4,7 @@ import { Either, right } from "@/core/either";
 import { BadRequestError } from "./errors/bad-request.error";
 
 interface CreatePromotionUseCaseRequest {
+  product_id: number;
   description: string;
   promotional_price: number;
   days: string[];
@@ -22,6 +23,7 @@ export class CreatePromotionUseCase {
   constructor(private promotionRepository: PromotionRepository) {}
 
   async execute({
+    product_id,
     description,
     promotional_price,
     days,
@@ -29,6 +31,7 @@ export class CreatePromotionUseCase {
     end_time,
   }: CreatePromotionUseCaseRequest): Promise<CreatePromotionUseCaseResponse> {
     const promotion = Promotion.create({
+      product_id,
       description,
       promotional_price,
       days,

@@ -9,8 +9,9 @@ export class DrizzlePromotionRepository implements PromotionRepository {
     const data = DrizzlePromotionMapper.toDrizzle(promotion);
 
     const result = await db.execute(sql`
-      INSERT INTO promotions (description, promotional_price, days, start_time, end_time, created_at, updated_at)
+      INSERT INTO promotions (product_id, description, promotional_price, days, start_time, end_time, created_at, updated_at)
       VALUES (
+        ${data.product_id},
         ${data.description}, 
         ${data.promotional_price}, 
         ${data.days}, 
