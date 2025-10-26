@@ -59,6 +59,14 @@ export class DrizzleProductRepository implements ProductRepository {
     return DrizzleProductMapper.toDomain(result[0] as any);
   }
 
+  async findAllVisible(): Promise<Product[]> {
+    const result = await db.execute(sql`
+      SELECT * FROM products WHERE visible = true ORDER BY "order" ASC
+    `);
+
+    return result.map((raw) => DrizzleProductMapper.toDomain(raw as any));
+  }
+
   async update(id: string, data: Partial<Product>): Promise<Product> {
     const updateData = DrizzleProductMapper.toUpdateData(data);
 

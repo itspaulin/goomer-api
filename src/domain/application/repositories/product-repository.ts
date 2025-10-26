@@ -5,6 +5,7 @@ export interface ProductRepository {
   findAll(): Promise<Product[]>;
   findById(id: string): Promise<Product | null>;
   findByName(name: string): Promise<Product | null>;
+  findAllVisible(): Promise<Product[]>;
   update(id: string, data: Partial<Product>): Promise<Product>;
   delete(id: string): Promise<void>;
 }

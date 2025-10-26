@@ -70,6 +70,14 @@ export class Promotion extends Entity<PromotionProps> {
     this.touch();
   }
 
+  isActive(currentDay: string, currentTime: string): boolean {
+    if (!this.days.includes(currentDay)) {
+      return false;
+    }
+
+    return currentTime >= this.start_time && currentTime <= this.end_time;
+  }
+
   static create(
     props: Optional<PromotionProps, "created_at">,
     id?: UniqueEntityId
