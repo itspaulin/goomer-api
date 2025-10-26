@@ -16,10 +16,16 @@ export const createPromotionBodySchema = z
     days: z.array(z.string().min(1)).min(1, "At least one day is required"),
     start_time: z
       .string()
-      .regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+      .regex(
+        /^([0-1][0-9]|2[0-3]):(00|15|30|45)$/,
+        "Time must be in HH:mm format with 15-minute intervals"
+      ),
     end_time: z
       .string()
-      .regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+      .regex(
+        /^([0-1][0-9]|2[0-3]):(00|15|30|45)$/,
+        "Time must be in HH:mm format with 15-minute intervals"
+      ),
   })
   .strict();
 
