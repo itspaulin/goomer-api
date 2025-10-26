@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { productRoutes } from "./product/product.routes";
-import { promotionRoutes } from "./promotion/product.routes";
+import { promotionRoutes } from "./promotion/promotion.routes";
 
 const routes = Router();
 
