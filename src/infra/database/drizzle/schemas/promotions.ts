@@ -5,10 +5,15 @@ import {
   decimal,
   text,
   timestamp,
+  integer,
 } from "drizzle-orm/pg-core";
+import { products } from "./products";
 
 export const promotions = pgTable("promotions", {
   id: serial("id").primaryKey(),
+  product_id: integer("product_id")
+    .notNull()
+    .references(() => products.id, { onDelete: "cascade" }),
   description: text("description").notNull(),
   promotional_price: decimal("promotional_price", {
     precision: 10,

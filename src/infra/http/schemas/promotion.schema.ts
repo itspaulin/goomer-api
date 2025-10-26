@@ -2,6 +2,10 @@ import { z } from "zod";
 
 export const createPromotionBodySchema = z
   .object({
+    product_id: z
+      .number()
+      .int()
+      .positive("Product ID must be a positive integer"),
     description: z
       .string()
       .min(1, "Description is required")

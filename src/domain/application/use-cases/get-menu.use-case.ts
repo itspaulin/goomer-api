@@ -26,7 +26,7 @@ export class GetMenuUseCase {
 
     const productsWithPromotions = products.map((product) => {
       const productPromotion = promotions.find(
-        (promo) => promo.id.toString() === product.id.toString()
+        (promo) => promo.product_id === parseInt(product.id.toString())
       );
 
       const isPromotionActive = productPromotion
