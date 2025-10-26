@@ -1,4 +1,3 @@
-// drizzle-promotion.repository.ts
 import { PromotionRepository } from "@/domain/application/repositories/promotion-repository";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { sql } from "drizzle-orm";
