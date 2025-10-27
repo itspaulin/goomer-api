@@ -1,7 +1,7 @@
 import { Entity } from "@/core/entities/entity";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 
-interface ProductProps {
+export interface ProductProps {
   name: string;
   price: number;
   category: "Entradas" | "Pratos principais" | "Sobremesas" | "Bebidas";
