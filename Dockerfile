@@ -1,28 +1,17 @@
 # Use Bun oficial como base
-FROM oven/bun:1 AS base
+FROM oven/bun:1
 WORKDIR /app
 
-# Instalar dependências (camada de cache)
-FROM base AS install
+# Instalar dependências
 COPY package.json ./
 COPY bun.lock* ./
 RUN bun install --frozen-lockfile
 
 # Copiar código fonte
-FROM base AS build
-COPY --from=install /app/node_modules ./node_modules
 COPY . .
 
-# Build TypeScript (se necessário)
-# RUN bun build
-
-# Produção
-FROM base AS production
-COPY --from=install /app/node_modules ./node_modules
-COPY --from=build /app .
-
 # Expor porta
-EXPOSE 3000
+EXPOSE 3333
 
 # Comando para rodar
-CMD ["bun", "run", "dev"]
+CMD ["sh", "-c", "bun run migrate && bun run dev"]
