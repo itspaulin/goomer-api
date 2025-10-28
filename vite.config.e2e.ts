@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["**/*.spec.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/*.spec.e2e.ts"],
+    include: ["**/*.spec.e2e.ts"],
+    exclude: ["**/node_modules/**", "**/dist/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
@@ -15,13 +15,14 @@ export default defineConfig({
         "dist/",
         "**/*.config.*",
         "**/*.d.ts",
-        "**/*.spec.e2e.ts",
+        "**/*.spec.ts",
       ],
     },
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@test": path.resolve(__dirname, "./test"),
     },
   },
 });
