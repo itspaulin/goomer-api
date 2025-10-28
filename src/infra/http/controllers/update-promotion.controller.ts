@@ -5,6 +5,7 @@ import {
   UpdatePromotionBody,
   updatePromotionBodySchema,
 } from "../schemas/promotion.schema";
+import { BadRequestError } from "@/domain/application/use-cases/errors/bad-request.error";
 
 export class UpdatePromotionController {
   constructor(private updatePromotionUseCase: UpdatePromotionUseCase) {}
@@ -13,10 +14,18 @@ export class UpdatePromotionController {
     const { id } = req.params;
     const body: UpdatePromotionBody = updatePromotionBodySchema.parse(req.body);
 
-    const { description, promotional_price, days, start_time, end_time } = body;
+    const {
+      product_id,
+      description,
+      promotional_price,
+      days,
+      start_time,
+      end_time,
+    } = body;
 
     const result = await this.updatePromotionUseCase.execute({
       id,
+      product_id,
       description,
       promotional_price,
       days,
@@ -30,6 +39,11 @@ export class UpdatePromotionController {
       switch (error.constructor) {
         case NotFoundError:
           return res.status(404).json({
+            message: error.message,
+          });
+
+        case BadRequestError:
+          return res.status(400).json({
             message: error.message,
           });
 

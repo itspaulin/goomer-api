@@ -41,6 +41,7 @@ export class GetMenuUseCase {
           ? productPromotion?.promotional_price
           : undefined,
         category: product.category,
+        order: product.order,
         promotion: productPromotion
           ? {
               description: productPromotion.description,

@@ -11,8 +11,19 @@ export class DeleteProductController {
     const result = await this.deleteProductUseCase.execute({ id });
 
     if (result.isLeft()) {
-      const error = result.value as NotFoundError;
-      return res.status(404).json({ message: error.message });
+      const error = result.value as Error;
+
+      switch (error.constructor) {
+        case NotFoundError:
+          return res.status(404).json({
+            message: error.message,
+          });
+
+        default:
+          return res.status(500).json({
+            message: "Internal server error",
+          });
+      }
     }
 
     const { message } = result.value;

@@ -24,7 +24,6 @@ describe("CreatePromotionController (E2E)", () => {
     );
     controller = new CreatePromotionController(useCase);
 
-    // Cria um produto válido para usar nas promoções
     const product = Product.create(
       {
         name: "Pizza Margherita",
@@ -70,7 +69,7 @@ describe("CreatePromotionController (E2E)", () => {
 
   it("deve retornar erro ao criar promoção com productId inválido", async () => {
     const req = makeMockRequest({
-      product_id: 999999, // ID que não existe
+      product_id: 999999,
       description: "Promoção inválida",
       promotional_price: 39.9,
       start_time: "18:00",
@@ -91,7 +90,7 @@ describe("CreatePromotionController (E2E)", () => {
     const req = makeMockRequest({
       product_id: 1,
       description: "Promoção inválida",
-      promotional_price: 100.0, // Maior que o preço do produto (45.9)
+      promotional_price: 100.0,
       start_time: "18:00",
       end_time: "22:00",
       days: ["Sábado", "Domingo"],
@@ -112,7 +111,7 @@ describe("CreatePromotionController (E2E)", () => {
       description: "Promoção com horários inválidos",
       promotional_price: 39.9,
       start_time: "22:00",
-      end_time: "18:00", // Horário de fim antes do início
+      end_time: "18:00",
       days: ["Sábado", "Domingo"],
     });
 
@@ -130,7 +129,7 @@ describe("CreatePromotionController (E2E)", () => {
       product_id: 1,
       description: "Promoção com horários inválidos",
       promotional_price: 39.9,
-      start_time: "18:05", // Não é múltiplo de 15 minutos
+      start_time: "18:05",
       end_time: "22:00",
       days: ["Sábado", "Domingo"],
     });
@@ -148,7 +147,7 @@ describe("CreatePromotionController (E2E)", () => {
       promotional_price: 39.9,
       start_time: "18:00",
       end_time: "22:00",
-      days: [], // Array vazio não é permitido
+      days: [],
     });
 
     const { res } = makeMockResponse();
@@ -160,7 +159,7 @@ describe("CreatePromotionController (E2E)", () => {
   it("deve validar schema e retornar erro com dados inválidos", async () => {
     const req = makeMockRequest({
       product_id: 1,
-      // Faltando campos obrigatórios
+
       description: "Promoção incompleta",
     });
 
