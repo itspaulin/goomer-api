@@ -14,7 +14,6 @@ export class UpdateProductController {
     const { id } = req.params;
 
     const body: UpdateProductBody = updateProductBodySchema.parse(req.body);
-    console.log("🔍 Controller - body parsed:", body);
 
     const updateData = Object.entries(body).reduce(
       (acc, [key, value]) => {
@@ -25,8 +24,6 @@ export class UpdateProductController {
       },
       { id } as any
     );
-
-    console.log("🔍 Controller - updateData:", updateData);
 
     const result = await this.updateProductUseCase.execute(updateData);
 

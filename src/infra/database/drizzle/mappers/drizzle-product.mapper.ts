@@ -1,20 +1,21 @@
 import { Product } from "@/domain/enterprise/entities/product";
-import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { Product as DrizzleProduct } from "../schemas/products";
+import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 
 export class DrizzleProductMapper {
-  static toDomain(raw: any): Product {
+  static toDomain(raw: DrizzleProduct): Product {
     return Product.create(
       {
         name: raw.name,
-        price: parseFloat(raw.price),
+        price:
+          typeof raw.price === "string" ? parseFloat(raw.price) : raw.price,
         category: raw.category,
-        visible: raw.visible,
-        order: raw.order,
-        created_at: new Date(raw.created_at),
-        updated_at: new Date(raw.updated_at),
+        visible: raw.visible ?? true,
+        order: raw.order ?? 0,
+        created_at: raw.created_at ? new Date(raw.created_at) : new Date(),
+        updated_at: raw.updated_at ? new Date(raw.updated_at) : new Date(),
       },
-      raw.id?.toString()
+      new UniqueEntityId(raw.id.toString())
     );
   }
 
