@@ -4,19 +4,33 @@ import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { InMemoryPromotionRepository } from "@/infra/database/test/repositories/in-memory-promotion-repository";
 import { GetMenuUseCase } from "./get-menu.use-case";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";
-import { DateUtils } from "@/core/utils/date-utils";
+import { DateTimeProvider } from "../providers/datetime-provider";
 
 let productRepository: InMemoryProductRepository;
 let promotionRepository: InMemoryPromotionRepository;
+let dateTimeProvider: DateTimeProvider;
 let sut: GetMenuUseCase;
 
 describe("GetMenuUseCase", () => {
   beforeEach(() => {
     productRepository = new InMemoryProductRepository();
     promotionRepository = new InMemoryPromotionRepository();
-    sut = new GetMenuUseCase(productRepository, promotionRepository);
 
-    vi.restoreAllMocks();
+    dateTimeProvider = {
+      getCurrentDay: vi.fn(),
+      getCurrentTime: vi.fn(),
+      formatDateTime: vi.fn(),
+    };
+
+    sut = new GetMenuUseCase(
+      productRepository,
+      promotionRepository,
+      dateTimeProvider
+    );
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it("deve retornar apenas produtos visíveis no cardápio", async () => {
@@ -121,7 +135,8 @@ describe("GetMenuUseCase", () => {
   });
 
   it("deve aplicar promoção ativa no horário e dia corretos", async () => {
-    vi.useFakeTimers({ now: new Date("2025-10-27T19:00:00") });
+    (dateTimeProvider.getCurrentDay as any).mockReturnValue("monday");
+    (dateTimeProvider.getCurrentTime as any).mockReturnValue("19:00");
 
     const product = Product.create(
       {
@@ -159,13 +174,14 @@ describe("GetMenuUseCase", () => {
 
     if (result.isRight()) {
       const products = result.value.menu[0]?.products;
+      expect(products![0]!.promotional_price).toBe(22.95);
+      expect(products![0]!.promotion?.active).toBe(true);
     }
-
-    vi.useRealTimers();
   });
 
   it("não deve aplicar promoção fora do horário", async () => {
-    vi.useFakeTimers({ now: new Date("2025-10-27T21:00:00") });
+    (dateTimeProvider.getCurrentDay as any).mockReturnValue("monday");
+    (dateTimeProvider.getCurrentTime as any).mockReturnValue("21:00");
 
     const product = Product.create(
       {
@@ -206,12 +222,11 @@ describe("GetMenuUseCase", () => {
       expect(products![0]!.promotional_price).toBeUndefined();
       expect(products![0]!.promotion?.active).toBe(false);
     }
-
-    vi.useRealTimers();
   });
 
   it("não deve aplicar promoção em dia diferente", async () => {
-    vi.useFakeTimers({ now: new Date("2025-10-28T19:00:00") });
+    (dateTimeProvider.getCurrentDay as any).mockReturnValue("tuesday");
+    (dateTimeProvider.getCurrentTime as any).mockReturnValue("19:00");
 
     const product = Product.create(
       {
@@ -252,8 +267,6 @@ describe("GetMenuUseCase", () => {
       expect(products![0]!.promotional_price).toBeUndefined();
       expect(products![0]!.promotion?.active).toBe(false);
     }
-
-    vi.useRealTimers();
   });
 
   it("deve retornar produtos sem promoção quando não houver promoção cadastrada", async () => {

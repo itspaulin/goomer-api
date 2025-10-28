@@ -5,7 +5,11 @@ export class GetMenuController {
   constructor(private getMenuUseCase: GetMenuUseCase) {}
 
   async getMenu(req: Request, res: Response): Promise<Response> {
-    const result = await this.getMenuUseCase.execute();
+    const { timezone } = req.query;
+
+    const result = await this.getMenuUseCase.execute({
+      timezone: timezone as string,
+    });
 
     if (result.isLeft()) {
       return res.status(500).json({
@@ -13,8 +17,11 @@ export class GetMenuController {
       });
     }
 
-    const { menu } = result.value;
+    const { menu, metadata } = result.value;
 
-    return res.status(200).json({ menu });
+    return res.status(200).json({
+      menu,
+      metadata,
+    });
   }
 }
