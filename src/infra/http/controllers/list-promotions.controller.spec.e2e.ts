@@ -1,19 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import request from "supertest";
+import express, { Express } from "express";
 import { InMemoryPromotionRepository } from "@/infra/database/test/repositories/in-memory-promotion-repository";
 import { ListPromotionsUseCase } from "@/domain/application/use-cases/list-promotions.use-case";
 import { ListPromotionsController } from "@/infra/http/controllers/list-promotions.controller";
-import { makeMockResponse } from "@test/utils/mock-express";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 
 describe("ListPromotionsController (E2E)", () => {
   let repository: InMemoryPromotionRepository;
-  let controller: ListPromotionsController;
+  let app: Express;
 
   beforeEach(async () => {
     repository = new InMemoryPromotionRepository();
     const useCase = new ListPromotionsUseCase(repository);
-    controller = new ListPromotionsController(useCase);
+    const controller = new ListPromotionsController(useCase);
+
+    app = express();
+    app.use(express.json());
+    app.get("/promotions", (req, res) => controller.list(res));
 
     const promo1 = Promotion.create(
       {
@@ -52,12 +57,10 @@ describe("ListPromotionsController (E2E)", () => {
   });
 
   it("deve listar todas as promoções com sucesso", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/promotions");
 
-    await controller.list(res);
-
-    expect(getStatus()).toBe(200);
-    const { promotions } = getBody();
+    expect(response.status).toBe(200);
+    const { promotions } = response.body;
 
     expect(promotions).toHaveLength(2);
     expect(promotions).toEqual(
@@ -87,31 +90,25 @@ describe("ListPromotionsController (E2E)", () => {
   it("deve retornar 404 se não houver promoções", async () => {
     repository.items = [];
 
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/promotions");
 
-    await controller.list(res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBe("No promotions found");
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("No promotions found");
   });
 
   it("deve manter a ordem de inserção das promoções", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/promotions");
 
-    await controller.list(res);
-
-    const { promotions } = getBody();
+    const { promotions } = response.body;
 
     expect(promotions[0].id).toBe("1");
     expect(promotions[1].id).toBe("2");
   });
 
   it("deve formatar datas como ISO string", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/promotions");
 
-    await controller.list(res);
-
-    const { promotions } = getBody();
+    const { promotions } = response.body;
 
     promotions.forEach((promo: any) => {
       expect(promo.created_at).toMatch(

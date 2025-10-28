@@ -1,19 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import request from "supertest";
+import express, { Express } from "express";
 import { InMemoryPromotionRepository } from "@/infra/database/test/repositories/in-memory-promotion-repository";
 import { DeletePromotionUseCase } from "@/domain/application/use-cases/delete-promotion.use-case";
 import { DeletePromotionController } from "@/infra/http/controllers/delete-promotion.controller";
-import { makeMockRequest, makeMockResponse } from "@test/utils/mock-express";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 
 describe("DeletePromotionController (E2E)", () => {
   let repository: InMemoryPromotionRepository;
-  let controller: DeletePromotionController;
+  let app: Express;
 
   beforeEach(async () => {
     repository = new InMemoryPromotionRepository();
     const useCase = new DeletePromotionUseCase(repository);
-    controller = new DeletePromotionController(useCase);
+    const controller = new DeletePromotionController(useCase);
+
+    app = express();
+    app.use(express.json());
+    app.delete("/promotions/:id", (req, res) => controller.delete(req, res));
 
     const promotion1 = Promotion.create(
       {
@@ -52,37 +56,28 @@ describe("DeletePromotionController (E2E)", () => {
   });
 
   it("deve deletar uma promoção com sucesso", async () => {
-    const req = makeMockRequest({}, { id: "1" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).delete("/promotions/1");
 
-    await controller.delete(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    expect(getBody().message).toBeDefined();
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBeDefined();
     expect(repository.items).toHaveLength(1);
     expect(repository.items[0]?.id.toString()).toBe("2");
   });
 
   it("deve retornar 404 ao tentar deletar promoção inexistente", async () => {
-    const req = makeMockRequest({}, { id: "999" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).delete("/promotions/999");
 
-    await controller.delete(req as any, res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBeDefined();
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBeDefined();
     expect(repository.items).toHaveLength(2);
   });
 
   it("deve manter outras promoções ao deletar uma específica", async () => {
     const initialCount = repository.items.length;
 
-    const req = makeMockRequest({}, { id: "1" });
-    const { res, getStatus } = makeMockResponse();
+    const response = await request(app).delete("/promotions/1");
 
-    await controller.delete(req as any, res);
-
-    expect(getStatus()).toBe(200);
+    expect(response.status).toBe(200);
     expect(repository.items).toHaveLength(initialCount - 1);
 
     const remainingPromotion = repository.items[0];

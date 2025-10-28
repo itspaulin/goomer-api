@@ -1,19 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import request from "supertest";
+import express, { Express } from "express";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";
 import { ListProductsUseCase } from "@/domain/application/use-cases/list-products.use-case";
 import { ListProductsController } from "@/infra/http/controllers/list-products.controller";
-import { makeMockResponse } from "@test/utils/mock-express";
 import { Product } from "@/domain/enterprise/entities/product";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 
 describe("ListProductsController (E2E)", () => {
   let repository: InMemoryProductRepository;
-  let controller: ListProductsController;
+  let app: Express;
 
   beforeEach(async () => {
     repository = new InMemoryProductRepository();
     const useCase = new ListProductsUseCase(repository);
-    controller = new ListProductsController(useCase);
+    const controller = new ListProductsController(useCase);
+
+    app = express();
+    app.use(express.json());
+    app.get("/products", (req, res) => controller.list(res));
 
     const pizza = Product.create(
       {
@@ -64,12 +68,10 @@ describe("ListProductsController (E2E)", () => {
   });
 
   it("deve listar todos os produtos (visíveis ou não)", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products");
 
-    await controller.list(res);
-
-    expect(getStatus()).toBe(200);
-    const { products } = getBody();
+    expect(response.status).toBe(200);
+    const { products } = response.body;
 
     expect(products).toHaveLength(3);
     expect(products.map((p: any) => p.id)).toEqual(
@@ -85,20 +87,16 @@ describe("ListProductsController (E2E)", () => {
   it("deve retornar 404 se não houver nenhum produto", async () => {
     repository.items = [];
 
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products");
 
-    await controller.list(res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBe("No products found");
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("No products found");
   });
 
   it("deve formatar a resposta com ProductPresenter.toHTTPList", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products");
 
-    await controller.list(res);
-
-    const { products } = getBody();
+    const { products } = response.body;
 
     expect(products).toHaveLength(3);
 
@@ -130,11 +128,9 @@ describe("ListProductsController (E2E)", () => {
   });
 
   it("deve manter a ordem de inserção (ou ordem do repositório)", async () => {
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products");
 
-    await controller.list(res);
-
-    const { products } = getBody();
+    const { products } = response.body;
 
     expect(products[0].id).toBe("1");
     expect(products[1].id).toBe("2");

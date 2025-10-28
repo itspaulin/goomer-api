@@ -48,9 +48,15 @@ export class InMemoryProductRepository implements ProductRepository {
     if (data.visible !== undefined) {
       product.visible = data.visible;
     }
+    console.log("🔍 Repository - data received:", data);
+    console.log("🔍 Repository - product.order BEFORE:", product.order);
     if (data.order !== undefined) {
       product.order = data.order;
+      console.log("🔍 Repository - product.order AFTER:", product.order);
     }
+
+    // Atualiza o updated_at manualmente sem usar o setter
+    product["props"].updated_at = new Date();
 
     return product;
   }

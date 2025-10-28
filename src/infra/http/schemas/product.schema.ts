@@ -17,7 +17,7 @@ export const createProductBodySchema = z.object({
     message: "Invalid category",
   }),
   visible: z.boolean().default(true),
-  order: z.number().int().nonnegative("Order must be non-negative").default(0),
+  order: z.number().int().nonnegative("Order must be non-negative").optional(),
 });
 
 export type CreateProductBody = z.infer<typeof createProductBodySchema>;
