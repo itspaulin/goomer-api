@@ -48,16 +48,6 @@ export class UpdateProductUseCase {
 
     const updatedProduct = await this.productRepository.update(id, updateData);
 
-    console.log("🔍 UseCase - received params:", {
-      id,
-      name,
-      price,
-      category,
-      visible,
-      order,
-    });
-    console.log("🔍 UseCase - updateData:", updateData);
-
     return right({
       product: updatedProduct,
     });

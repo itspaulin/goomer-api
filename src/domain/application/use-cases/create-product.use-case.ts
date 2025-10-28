@@ -8,7 +8,7 @@ interface CreateProductUseCaseRequest {
   price: number;
   category: "Entradas" | "Pratos principais" | "Sobremesas" | "Bebidas";
   visible: boolean;
-  order: number;
+  order?: number;
 }
 
 type CreateProductUseCaseResponse = Either<
@@ -26,7 +26,7 @@ export class CreateProductUseCase {
     price,
     category,
     visible,
-    order,
+    order = 0,
   }: CreateProductUseCaseRequest): Promise<CreateProductUseCaseResponse> {
     const existingProduct = await this.productRepository.findByName(name);
 
