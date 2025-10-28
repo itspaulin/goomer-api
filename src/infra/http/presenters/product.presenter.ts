@@ -9,8 +9,8 @@ export class ProductPresenter {
       category: product.category,
       visible: product.visible,
       order: product.order,
-      created_at: product.created_at,
-      updated_at: product.updated_at,
+      created_at: product.created_at.toISOString(),
+      updated_at: product.updated_at ? product.updated_at.toISOString() : null,
     };
   }
 

@@ -130,7 +130,6 @@ export class UpdatePromotionUseCase {
       days,
       start_time: validatedStartTime,
       end_time: validatedEndTime,
-      updated_at: new Date(),
     });
 
     return right({

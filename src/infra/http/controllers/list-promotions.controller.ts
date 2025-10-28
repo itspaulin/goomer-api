@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { ListPromotionsUseCase } from "@/domain/application/use-cases/list-promotions.use-case";
+import { PromotionPresenter } from "../presenters/promotion.presenter";
 
 export class ListPromotionsController {
   constructor(private listPromotionsUseCase: ListPromotionsUseCase) {}
@@ -14,6 +15,8 @@ export class ListPromotionsController {
     }
 
     const { promotions } = result.value;
-    return res.status(200).json({ promotions });
+    return res.status(200).json({
+      promotions: PromotionPresenter.toHTTPList(promotions),
+    });
   }
 }

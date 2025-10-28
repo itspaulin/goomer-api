@@ -5,6 +5,7 @@ import { BadRequestError } from "./errors/bad-request.error";
 import { NotFoundError } from "./errors/not-found.error";
 import { ProductRepository } from "../repositories/product-repository";
 import { Time } from "@/domain/enterprise/value-objects/time";
+import { InvalidPromotionalPriceError } from "./errors/invalid-promotional-price.error";
 
 interface CreatePromotionUseCaseRequest {
   product_id: number;
@@ -16,7 +17,7 @@ interface CreatePromotionUseCaseRequest {
 }
 
 type CreatePromotionUseCaseResponse = Either<
-  BadRequestError | NotFoundError,
+  BadRequestError | NotFoundError | InvalidPromotionalPriceError,
   {
     promotion: Promotion;
   }
@@ -63,6 +64,10 @@ export class CreatePromotionUseCase {
     );
     if (!productExists) {
       return left(new NotFoundError("Product not found"));
+    }
+
+    if (promotional_price >= productExists.price) {
+      return left(new InvalidPromotionalPriceError());
     }
 
     const promotion = Promotion.create({
