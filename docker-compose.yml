@@ -5,10 +5,35 @@ services:
     environment:
       POSTGRES_USER: goomer
       POSTGRES_PASSWORD: goomer
-      POSTGRES_DB: goomer_api
+      POSTGRES_DB: goomer
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goomer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3333:3333"
+    environment:
+      NODE_ENV: development
+      PORT: 3333
+      DATABASE_URL: postgresql://goomer:goomer@db:5432/goomer
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "bun run migrate && bun run dev"
+
 volumes:
   pgdata:

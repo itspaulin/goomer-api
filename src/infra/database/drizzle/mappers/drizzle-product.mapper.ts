@@ -3,18 +3,18 @@ import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { Product as DrizzleProduct } from "../schemas/products";
 
 export class DrizzleProductMapper {
-  static toDomain(raw: DrizzleProduct): Product {
+  static toDomain(raw: any): Product {
     return Product.create(
       {
         name: raw.name,
         price: parseFloat(raw.price),
         category: raw.category,
-        visible: raw.visible ?? true,
-        order: raw.order ?? 0,
-        created_at: raw.created_at ?? new Date(),
-        updated_at: raw.updated_at ?? new Date(),
+        visible: raw.visible,
+        order: raw.order,
+        created_at: new Date(raw.created_at),
+        updated_at: new Date(raw.updated_at),
       },
-      new UniqueEntityId(raw.id.toString())
+      raw.id?.toString()
     );
   }
 

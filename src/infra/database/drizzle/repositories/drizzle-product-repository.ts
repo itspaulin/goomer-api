@@ -2,28 +2,29 @@ import { ProductRepository } from "@/domain/application/repositories/product-rep
 import { Product } from "@/domain/enterprise/entities/product";
 import { eq, sql } from "drizzle-orm";
 import { products } from "../../drizzle/schemas/products";
-import { db } from "../../index";
+import { client, db } from "../../index";
 import { DrizzleProductMapper } from "../mappers/drizzle-product.mapper";
 
 export class DrizzleProductRepository implements ProductRepository {
   async create(product: Product): Promise<Product> {
     const data = DrizzleProductMapper.toDrizzle(product);
 
-    const result = await db.execute(sql`
+    const result = await client`
     INSERT INTO products (name, price, category, visible, "order", created_at, updated_at)
     VALUES (
       ${data.name}, 
       ${data.price}, 
-      ${data.category}, 
+      ${data.category}::category,
       ${data.visible}, 
       ${data.order}, 
       NOW(), 
       NOW()
     )
     RETURNING *
-  `);
+  `;
 
     const created = result[0];
+
     if (!created) {
       throw new Error("Failed to create product");
     }
@@ -50,9 +51,9 @@ export class DrizzleProductRepository implements ProductRepository {
   }
 
   async findByName(name: string): Promise<Product | null> {
-    const result = await db.execute(sql`
-      SELECT * FROM products WHERE name = ${name} LIMIT 1
-    `);
+    const result = await client`
+    SELECT * FROM products WHERE name = ${name} LIMIT 1
+  `;
 
     if (!result[0]) return null;
 
