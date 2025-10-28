@@ -36,7 +36,6 @@ export class InMemoryProductRepository implements ProductRepository {
       throw new Error("Product not found");
     }
 
-    // Usar os setters que já atualizam o updated_at automaticamente
     if (data.name !== undefined) {
       product.name = data.name;
     }

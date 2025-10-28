@@ -81,11 +81,19 @@ export class Promotion extends Entity<PromotionProps> {
   }
 
   isActive(currentDay: string, currentTime: string): boolean {
-    if (!this.days.includes(currentDay)) {
+    if (!currentDay || !currentTime) {
       return false;
     }
 
-    return currentTime >= this.start_time && currentTime <= this.end_time;
+    const normalizedDay = currentDay?.toLowerCase();
+    const normalizedTime =
+      currentTime.length === 5 ? currentTime + ":00" : currentTime;
+
+    if (!this.days.map((d) => d.toLowerCase()).includes(normalizedDay)) {
+      return false;
+    }
+
+    return normalizedTime >= this.start_time && normalizedTime <= this.end_time;
   }
 
   static create(

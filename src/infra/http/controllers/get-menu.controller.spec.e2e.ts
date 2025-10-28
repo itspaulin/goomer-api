@@ -7,24 +7,30 @@ import { makeMockRequest, makeMockResponse } from "@test/utils/mock-express";
 import { Product } from "@/domain/enterprise/entities/product";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
-import { DateUtils } from "@/core/utils/date-utils";
-
-vi.mock("@/core/utils/date-utils", () => ({
-  DateUtils: {
-    getDayName: vi.fn(),
-    formatTime: vi.fn(),
-  },
-}));
+import { DateTimeProvider } from "@/domain/application/providers/datetime-provider";
+import { MockDateTimeProvider } from "@test/utils/mock-datetime-provider";
+import { TimezoneUtils } from "@/core/utils/timezone-utils";
 
 describe("GetMenuController (E2E)", () => {
   let productRepository: InMemoryProductRepository;
   let promotionRepository: InMemoryPromotionRepository;
   let controller: GetMenuController;
 
+  let dateTimeProvider: MockDateTimeProvider;
+
   beforeEach(async () => {
     productRepository = new InMemoryProductRepository();
     promotionRepository = new InMemoryPromotionRepository();
-    const useCase = new GetMenuUseCase(productRepository, promotionRepository);
+    dateTimeProvider = new MockDateTimeProvider();
+
+    dateTimeProvider.getCurrentDay.mockReturnValue("segunda-feira");
+    dateTimeProvider.getCurrentTime.mockReturnValue("19:00");
+
+    const useCase = new GetMenuUseCase(
+      productRepository,
+      promotionRepository,
+      dateTimeProvider
+    );
     controller = new GetMenuController(useCase);
 
     const pizza = Product.create(
@@ -75,7 +81,7 @@ describe("GetMenuController (E2E)", () => {
         product_id: 1,
         description: "Segunda: 30% off na pizza",
         promotional_price: 32.13,
-        days: ["Segunda"],
+        days: ["segunda-feira"],
         start_time: "18:00",
         end_time: "22:00",
         created_at: new Date(),
@@ -88,7 +94,7 @@ describe("GetMenuController (E2E)", () => {
         product_id: 2,
         description: "Terça: Coca grátis",
         promotional_price: 0,
-        days: ["Terça"],
+        days: ["terça-feira"],
         start_time: "11:00",
         end_time: "15:00",
         created_at: new Date(),
@@ -107,8 +113,8 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve retornar o menu agrupado por categoria com promoção ativa", async () => {
-    vi.mocked(DateUtils.getDayName).mockReturnValue("Segunda");
-    vi.mocked(DateUtils.formatTime).mockReturnValue("19:00");
+    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
+    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
 
     const req = makeMockRequest();
     const { res, getStatus, getBody } = makeMockResponse();
@@ -151,8 +157,8 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve retornar menu sem promoção ativa se fora do horário/dia", async () => {
-    vi.mocked(DateUtils.getDayName).mockReturnValue("Domingo");
-    vi.mocked(DateUtils.formatTime).mockReturnValue("10:00");
+    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("domingo");
+    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("10:00");
 
     const req = makeMockRequest();
     const { res, getStatus, getBody } = makeMockResponse();
@@ -174,8 +180,8 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve ignorar produtos com visible: false", async () => {
-    vi.mocked(DateUtils.getDayName).mockReturnValue("Segunda");
-    vi.mocked(DateUtils.formatTime).mockReturnValue("19:00");
+    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
+    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
 
     const req = makeMockRequest();
     const { res, getStatus, getBody } = makeMockResponse();
@@ -190,8 +196,8 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve ordenar categorias e itens corretamente", async () => {
-    vi.mocked(DateUtils.getDayName).mockReturnValue("Segunda");
-    vi.mocked(DateUtils.formatTime).mockReturnValue("19:00");
+    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
+    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
 
     const req = makeMockRequest();
     const { res, getStatus, getBody } = makeMockResponse();
@@ -214,5 +220,30 @@ describe("GetMenuController (E2E)", () => {
       name: "Coca-Cola",
       order: 2,
     });
+  });
+
+  it("deve usar timezone corretamente", async () => {
+    dateTimeProvider.getCurrentDay.mockImplementation((tz) => {
+      expect(tz).toBe("America/Manaus");
+      return "segunda-feira";
+    });
+
+    dateTimeProvider.getCurrentTime.mockImplementation((tz) => {
+      expect(tz).toBe("America/Manaus");
+      return "19:00";
+    });
+
+    const req = makeMockRequest({}, {}, { timezone: "America/Manaus" });
+
+    const { res, getStatus, getBody } = makeMockResponse();
+
+    await controller.getMenu(req as any, res);
+
+    expect(getStatus()).toBe(200);
+    const { menu, metadata } = getBody();
+
+    expect(metadata.timezone).toBe("America/Manaus");
+    expect(metadata.current_day).toBeDefined();
+    expect(metadata.current_time).toBeDefined();
   });
 });

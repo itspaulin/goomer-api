@@ -41,7 +41,6 @@ export class InMemoryPromotionRepository implements PromotionRepository {
       throw new Error("Promotion not found");
     }
 
-    // Usar os setters que já atualizam o updated_at automaticamente
     if (data.product_id !== undefined) {
       promotion.product_id = data.product_id;
     }

@@ -1,11 +1,21 @@
 import { Either, right } from "@/core/either";
 import { ProductRepository } from "../repositories/product-repository";
 import { PromotionRepository } from "../repositories/promotion-repository";
+import { DateTimeProvider } from "../providers/datetime-provider";
 import { MenuByCategory, MenuUtils } from "./utils/menu-utils";
-import { DateUtils } from "@/core/utils/date-utils";
+import { TimezoneUtils } from "@/core/utils/timezone-utils";
+
+interface GetMenuUseCaseRequest {
+  timezone?: string;
+}
 
 interface GetMenuUseCaseResponse {
   menu: MenuByCategory[];
+  metadata: {
+    timezone: string;
+    current_time: string;
+    current_day: string;
+  };
 }
 
 type GetMenuUseCaseResult = Either<null, GetMenuUseCaseResponse>;
@@ -13,16 +23,21 @@ type GetMenuUseCaseResult = Either<null, GetMenuUseCaseResponse>;
 export class GetMenuUseCase {
   constructor(
     private productRepository: ProductRepository,
-    private promotionRepository: PromotionRepository
+    private promotionRepository: PromotionRepository,
+    private dateTimeProvider: DateTimeProvider
   ) {}
-  async execute(): Promise<GetMenuUseCaseResult> {
-    const products = await this.productRepository.findAllVisible();
 
+  async execute(
+    request: GetMenuUseCaseRequest = {}
+  ): Promise<GetMenuUseCaseResult> {
+    const timezone = TimezoneUtils.normalizeTimezone(request.timezone);
+
+    const products = await this.productRepository.findAllVisible();
     const promotions = await this.promotionRepository.findAll();
 
-    const now = new Date();
-    const currentDay = DateUtils.getDayName(now);
-    const currentTime = DateUtils.formatTime(now);
+    const currentDay = this.dateTimeProvider.getCurrentDay(timezone);
+
+    const currentTime = this.dateTimeProvider.getCurrentTime(timezone);
 
     const productsWithPromotions = products.map((product) => {
       const productPromotion = promotions.find(
@@ -55,6 +70,11 @@ export class GetMenuUseCase {
 
     return right({
       menu: menuByCategory,
+      metadata: {
+        timezone,
+        current_time: currentTime,
+        current_day: currentDay,
+      },
     });
   }
 }

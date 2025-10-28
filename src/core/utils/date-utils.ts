@@ -1,20 +1,26 @@
 export class DateUtils {
   static getDayName(date: Date): string {
+    if (!date) {
+      return "";
+    }
+
     const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      "domingo",
+      "segunda-feira",
+      "terça-feira",
+      "quarta-feira",
+      "quinta-feira",
+      "sexta-feira",
+      "sábado",
     ];
     return days[date.getDay()]!;
   }
 
   static formatTime(date: Date): string {
-    const hours = date.getHours().toString().padStart(2, "0");
-    const minutes = date.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
+    if (!date) {
+      return "";
+    }
+
+    return date.toTimeString().slice(0, 5);
   }
 }
