@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express, { Express } from "express";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";

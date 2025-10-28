@@ -1,13 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";
 import { ShowProductUseCase } from "@/domain/application/use-cases/show-product.use-case";
 import { ShowProductController } from "@/infra/http/controllers/show-product.controller";
-import { makeMockRequest, makeMockResponse } from "@test/utils/mock-express";
 import { Product } from "@/domain/enterprise/entities/product";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { ProductPresenter } from "@/infra/http/presenters/product.presenter";
 
-describe("ShowProductController (E2E)", () => {
+import express, { Request, Response, NextFunction } from "express";
+import request from "supertest";
+import { describe, beforeEach, afterEach, it, expect, vi } from "vitest";
+
+const app = express();
+app.use(express.json());
+
+describe("ShowProductController (E2E com supertest)", () => {
   let repository: InMemoryProductRepository;
   let controller: ShowProductController;
 
@@ -15,6 +20,21 @@ describe("ShowProductController (E2E)", () => {
     repository = new InMemoryProductRepository();
     const useCase = new ShowProductUseCase(repository);
     controller = new ShowProductController(useCase);
+
+    app.get(
+      "/products/:id",
+      async (
+        req: Request<{ id: string }>,
+        res: Response,
+        next: NextFunction
+      ) => {
+        try {
+          await controller.show(req, res);
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
 
     const product = Product.create(
       {
@@ -38,13 +58,9 @@ describe("ShowProductController (E2E)", () => {
   });
 
   it("deve retornar o produto com sucesso", async () => {
-    const req = makeMockRequest({}, { id: "1" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products/1").expect(200);
 
-    await controller.show(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    const { product } = getBody();
+    const product = response.body.product;
 
     expect(product).toEqual(
       ProductPresenter.toHTTPList([repository.items[0]!])[0]
@@ -68,13 +84,9 @@ describe("ShowProductController (E2E)", () => {
   });
 
   it("deve retornar 404 se o produto não existir", async () => {
-    const req = makeMockRequest({}, { id: "999" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products/999").expect(404);
 
-    await controller.show(req as any, res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBe("Product not found");
+    expect(response.body.message).toBe("Product not found");
   });
 
   it("deve retornar 500 para erros inesperados", async () => {
@@ -82,22 +94,15 @@ describe("ShowProductController (E2E)", () => {
       new Error("DB error")
     );
 
-    const req = makeMockRequest({}, { id: "1" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products/1").expect(500);
 
-    await controller.show(req as any, res);
-
-    expect(getStatus()).toBe(500);
-    expect(getBody().message).toBe("Internal server error");
+    expect(response.body.message).toBe("Internal server error");
   });
 
   it("deve formatar datas como ISO string via ProductPresenter", async () => {
-    const req = makeMockRequest({}, { id: "1" });
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/products/1").expect(200);
 
-    await controller.show(req as any, res);
-
-    const { product } = getBody();
+    const { product } = response.body;
 
     expect(typeof product.created_at).toBe("string");
     expect(typeof product.updated_at).toBe("string");

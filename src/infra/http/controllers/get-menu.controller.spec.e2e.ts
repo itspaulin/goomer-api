@@ -1,22 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import request from "supertest";
+import express, { Express } from "express";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";
 import { InMemoryPromotionRepository } from "@/infra/database/test/repositories/in-memory-promotion-repository";
 import { GetMenuUseCase } from "@/domain/application/use-cases/get-menu.use-case";
 import { GetMenuController } from "@/infra/http/controllers/get-menu.controller";
-import { makeMockRequest, makeMockResponse } from "@test/utils/mock-express";
 import { Product } from "@/domain/enterprise/entities/product";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
-import { DateTimeProvider } from "@/domain/application/providers/datetime-provider";
 import { MockDateTimeProvider } from "@test/utils/mock-datetime-provider";
-import { TimezoneUtils } from "@/core/utils/timezone-utils";
 
 describe("GetMenuController (E2E)", () => {
   let productRepository: InMemoryProductRepository;
   let promotionRepository: InMemoryPromotionRepository;
-  let controller: GetMenuController;
-
   let dateTimeProvider: MockDateTimeProvider;
+  let app: Express;
 
   beforeEach(async () => {
     productRepository = new InMemoryProductRepository();
@@ -31,7 +29,11 @@ describe("GetMenuController (E2E)", () => {
       promotionRepository,
       dateTimeProvider
     );
-    controller = new GetMenuController(useCase);
+    const controller = new GetMenuController(useCase);
+
+    app = express();
+    app.use(express.json());
+    app.get("/menu", (req, res) => controller.getMenu(req, res));
 
     const pizza = Product.create(
       {
@@ -113,16 +115,13 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve retornar o menu agrupado por categoria com promoção ativa", async () => {
-    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
-    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
+    dateTimeProvider.getCurrentDay.mockReturnValue("segunda-feira");
+    dateTimeProvider.getCurrentTime.mockReturnValue("19:00");
 
-    const req = makeMockRequest();
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/menu");
 
-    await controller.getMenu(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    const { menu } = getBody();
+    expect(response.status).toBe(200);
+    const { menu } = response.body;
 
     const pratos = menu.find(
       (cat: any) => cat.category === "Pratos principais"
@@ -148,25 +147,23 @@ describe("GetMenuController (E2E)", () => {
       id: "2",
       name: "Coca-Cola",
       price: 5.0,
-      promotional_price: undefined,
       promotion: {
         description: "Terça: Coca grátis",
         active: false,
       },
     });
+    // Verifica que promotional_price não está presente
+    expect(bebidas!.products[0].promotional_price).toBeUndefined();
   });
 
   it("deve retornar menu sem promoção ativa se fora do horário/dia", async () => {
-    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("domingo");
-    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("10:00");
+    dateTimeProvider.getCurrentDay.mockReturnValue("domingo");
+    dateTimeProvider.getCurrentTime.mockReturnValue("10:00");
 
-    const req = makeMockRequest();
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/menu");
 
-    await controller.getMenu(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    const { menu } = getBody();
+    expect(response.status).toBe(200);
+    const { menu } = response.body;
 
     const pratos = menu.find(
       (cat: any) => cat.category === "Pratos principais"
@@ -180,15 +177,12 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve ignorar produtos com visible: false", async () => {
-    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
-    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
+    dateTimeProvider.getCurrentDay.mockReturnValue("segunda-feira");
+    dateTimeProvider.getCurrentTime.mockReturnValue("19:00");
 
-    const req = makeMockRequest();
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/menu");
 
-    await controller.getMenu(req as any, res);
-
-    const { menu } = getBody();
+    const { menu } = response.body;
 
     const bebidas = menu.find((cat: any) => cat.category === "Bebidas");
     expect(bebidas!.products).toHaveLength(1);
@@ -196,15 +190,12 @@ describe("GetMenuController (E2E)", () => {
   });
 
   it("deve ordenar categorias e itens corretamente", async () => {
-    vi.mocked(dateTimeProvider.getCurrentDay).mockReturnValue("segunda-feira");
-    vi.mocked(dateTimeProvider.getCurrentTime).mockReturnValue("19:00");
+    dateTimeProvider.getCurrentDay.mockReturnValue("segunda-feira");
+    dateTimeProvider.getCurrentTime.mockReturnValue("19:00");
 
-    const req = makeMockRequest();
-    const { res, getStatus, getBody } = makeMockResponse();
+    const response = await request(app).get("/menu");
 
-    await controller.getMenu(req as any, res);
-
-    const { menu } = getBody();
+    const { menu } = response.body;
 
     expect(menu).toHaveLength(2);
     expect(menu[0].category).toBe("Pratos principais");
@@ -233,14 +224,12 @@ describe("GetMenuController (E2E)", () => {
       return "19:00";
     });
 
-    const req = makeMockRequest({}, {}, { timezone: "America/Manaus" });
+    const response = await request(app)
+      .get("/menu")
+      .query({ timezone: "America/Manaus" });
 
-    const { res, getStatus, getBody } = makeMockResponse();
-
-    await controller.getMenu(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    const { menu, metadata } = getBody();
+    expect(response.status).toBe(200);
+    const { menu, metadata } = response.body;
 
     expect(metadata.timezone).toBe("America/Manaus");
     expect(metadata.current_day).toBeDefined();

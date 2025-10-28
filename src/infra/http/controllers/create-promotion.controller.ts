@@ -7,6 +7,7 @@ import {
 import { BadRequestError } from "@/domain/application/use-cases/errors/bad-request.error";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { InvalidPromotionalPriceError } from "@/domain/application/use-cases/errors/invalid-promotional-price.error";
+import { PromotionPresenter } from "../presenters/promotion.presenter";
 
 export class CreatePromotionController {
   constructor(private createPromotionUseCase: CreatePromotionUseCase) {}
@@ -44,6 +45,8 @@ export class CreatePromotionController {
 
     const { promotion } = result.value;
 
-    return res.status(201).json({ promotion });
+    return res.status(201).json({
+      promotion: PromotionPresenter.toHTTP(promotion),
+    });
   }
 }

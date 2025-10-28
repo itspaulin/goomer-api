@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { NotFoundError } from "@/domain/application/use-cases/errors/not-found.error";
 import { UpdatePromotionUseCase } from "@/domain/application/use-cases/update-promotion.use-case";
+import { PromotionPresenter } from "../presenters/promotion.presenter";
 import {
   UpdatePromotionBody,
   updatePromotionBodySchema,
@@ -55,6 +56,8 @@ export class UpdatePromotionController {
     }
 
     const { promotion } = result.value;
-    return res.status(200).json({ promotion });
+    return res.status(200).json({
+      promotion: PromotionPresenter.toHTTP(promotion),
+    });
   }
 }

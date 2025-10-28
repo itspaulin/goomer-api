@@ -1,5 +1,5 @@
 import { ProductRepository } from "../repositories/product-repository";
-import { Product } from "../../enterprise/entities/product";
+import { Product, ProductProps } from "../../enterprise/entities/product";
 import { Either, right, left } from "@/core/either";
 import { NotFoundError } from "./errors/not-found.error";
 
@@ -36,14 +36,27 @@ export class UpdateProductUseCase {
       return left(new NotFoundError("Product not found"));
     }
 
-    const updatedProduct = await this.productRepository.update(id, {
+    const updateData: Partial<ProductProps> = {
+      updated_at: new Date(),
+    };
+
+    if (name !== undefined) updateData.name = name;
+    if (price !== undefined) updateData.price = price;
+    if (category !== undefined) updateData.category = category;
+    if (visible !== undefined) updateData.visible = visible;
+    if (order !== undefined) updateData.order = order;
+
+    const updatedProduct = await this.productRepository.update(id, updateData);
+
+    console.log("🔍 UseCase - received params:", {
+      id,
       name,
       price,
       category,
       visible,
       order,
-      updated_at: new Date(),
     });
+    console.log("🔍 UseCase - updateData:", updateData);
 
     return right({
       product: updatedProduct,

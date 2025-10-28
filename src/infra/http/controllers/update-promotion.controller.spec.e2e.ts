@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import request from "supertest";
+import express, { Express } from "express";
 import { InMemoryPromotionRepository } from "@/infra/database/test/repositories/in-memory-promotion-repository";
 import { InMemoryProductRepository } from "@/infra/database/test/repositories/in-memory-product-repository";
 import { UpdatePromotionUseCase } from "@/domain/application/use-cases/update-promotion.use-case";
 import { UpdatePromotionController } from "@/infra/http/controllers/update-promotion.controller";
-import { makeMockResponse, makeMockRequest } from "@test/utils/mock-express";
 import { Promotion } from "@/domain/enterprise/entities/promotion";
 import { UniqueEntityId } from "@/core/entities/unique-entity-id";
 import { Product } from "@/domain/enterprise/entities/product";
@@ -12,7 +12,7 @@ import { updatePromotionBodySchema } from "../schemas/promotion.schema";
 describe("UpdatePromotionController (E2E)", () => {
   let promotionRepository: InMemoryPromotionRepository;
   let productRepository: InMemoryProductRepository;
-  let controller: UpdatePromotionController;
+  let app: Express;
 
   beforeEach(async () => {
     promotionRepository = new InMemoryPromotionRepository();
@@ -22,7 +22,29 @@ describe("UpdatePromotionController (E2E)", () => {
       promotionRepository,
       productRepository
     );
-    controller = new UpdatePromotionController(useCase);
+    const controller = new UpdatePromotionController(useCase);
+
+    app = express();
+    app.use(express.json());
+    app.patch("/promotions/:id", async (req, res, next) => {
+      try {
+        await controller.update(req, res);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // Middleware de erro para Zod
+    app.use((err: any, req: any, res: any, next: any) => {
+      if (err.name === "ZodError") {
+        return res.status(400).json({
+          issues: err.issues,
+        });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
+      });
+    });
 
     const product = Product.create(
       {
@@ -60,44 +82,34 @@ describe("UpdatePromotionController (E2E)", () => {
   });
 
   it("deve atualizar uma promoção existente com sucesso", async () => {
-    const req = makeMockRequest(
-      {
+    const response = await request(app)
+      .patch("/promotions/1")
+      .send({
         description: "Promo atualizada",
         promotional_price: 35,
         days: ["Terça"],
         start_time: "19:00",
         end_time: "23:00",
-      },
-      { id: "1" }
-    );
+      });
 
-    const { res, getStatus, getBody } = makeMockResponse();
-
-    await controller.update(req as any, res);
-
-    expect(getStatus()).toBe(200);
-    const { promotion } = getBody();
+    expect(response.status).toBe(200);
+    const { promotion } = response.body;
     expect(promotion.description).toBe("Promo atualizada");
   });
 
   it("deve retornar 404 se a promoção não existir", async () => {
-    const req = makeMockRequest(
-      {
+    const response = await request(app)
+      .patch("/promotions/999")
+      .send({
         description: "Inexistente",
         promotional_price: 30,
         days: ["Sexta"],
         start_time: "17:00",
         end_time: "21:00",
-      },
-      { id: "999" }
-    );
+      });
 
-    const { res, getStatus, getBody } = makeMockResponse();
-
-    await controller.update(req as any, res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBe("Promotion not found");
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Promotion not found");
   });
 
   it("deve retornar 400 se o horário for inválido", async () => {
@@ -113,36 +125,22 @@ describe("UpdatePromotionController (E2E)", () => {
   });
 
   it("deve retornar 400 se o horário final for antes do inicial", async () => {
-    const req = makeMockRequest(
-      {
-        start_time: "20:00",
-        end_time: "19:00",
-      },
-      { id: "1" }
-    );
+    const response = await request(app).patch("/promotions/1").send({
+      start_time: "20:00",
+      end_time: "19:00",
+    });
 
-    const { res, getStatus, getBody } = makeMockResponse();
-
-    await controller.update(req as any, res);
-
-    expect(getStatus()).toBe(400);
-    expect(getBody().message).toBe("End time must be after start time");
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("End time must be after start time");
   });
 
   it("deve retornar 404 se o produto informado não existir", async () => {
-    const req = makeMockRequest(
-      {
-        product_id: 999,
-        description: "Produto inexistente",
-      },
-      { id: "1" }
-    );
+    const response = await request(app).patch("/promotions/1").send({
+      product_id: 999,
+      description: "Produto inexistente",
+    });
 
-    const { res, getStatus, getBody } = makeMockResponse();
-
-    await controller.update(req as any, res);
-
-    expect(getStatus()).toBe(404);
-    expect(getBody().message).toBe("Produto não encontrado");
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Produto não encontrado");
   });
 });
