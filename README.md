@@ -485,7 +485,3 @@ Este projeto foi desenvolvido como parte de um desafio técnico.
 ## Autor
 
 Desenvolvido por **Paulo Barbosa** como parte do desafio técnico da Goomer.
-
----
-
-Desenvolvido com Bun, TypeScript e dedicação.
