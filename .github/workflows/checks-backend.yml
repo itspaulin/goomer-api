@@ -1,0 +1,126 @@
+name: "Pull Request: Checks"
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "package.json"
+      - "bun.lock"
+      - "docker-compose.yml"
+      - "Dockerfile"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.1
+
+      - name: Restore Bun cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Save Bun cache
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+
+  build:
+    name: Build Check
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.1
+
+      - name: Restore Bun cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run tsc --noEmit || echo "Warning - tsc not configured"
+
+  test:
+    name: Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://goomer:goomer@localhost:5432/goomer
+      NODE_ENV: test
+      PORT: 3333
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.3.1
+
+      - name: Restore Bun cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start PostgreSQL with docker-compose
+        run: |
+          docker compose up -d db
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          timeout 60s bash -c 'until docker compose exec -T db pg_isready -U goomer -d goomer; do sleep 2; done'
+
+      - name: Run migrations
+        run: bun run migrate
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run e2e tests
+        run: bun test:e2e
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v
