@@ -1,13 +1,13 @@
-name: 'Pull Request: Checks'
+name: "Pull Request: Checks"
 
 on:
   pull_request:
     paths:
-      - 'src/**'
-      - 'package.json'
-      - 'bun.lock'
-      - 'docker-compose.yml'
-      - 'Dockerfile'
+      - "src/**"
+      - "package.json"
+      - "bun.lock"
+      - "docker-compose.yml"
+      - "Dockerfile"
   workflow_dispatch:
 
 concurrency:
@@ -73,7 +73,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Type check
-        run: bun run tsc --noEmit || echo "⚠️ Aviso: tsc não configurado"
+        run: bun run tsc --noEmit || echo "Warning - tsc not configured"
 
   test:
     name: Tests
@@ -90,7 +90,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.3.1
+          bun-version: 1.0.0
 
       - name: Restore Bun cache
         uses: actions/cache@v4
