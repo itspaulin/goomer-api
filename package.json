@@ -7,7 +7,8 @@
     "start": "bun run src/infra/main.ts",
     "dev": "nodemon --exec bun src/infra/main.ts",
     "migrate": "bunx drizzle-kit generate && bunx drizzle-kit push",
-    "test": "node scripts/test-all.js",
+    "test:all": "vitest --config vitest.config.ts",
+    "test:unit": "vitest --config vite.config.ts",
     "test:e2e": "vitest --config vite.config.e2e.ts"
   },
   "devDependencies": {

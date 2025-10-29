@@ -1,5 +1,7 @@
 # Goomer Menu API
 
+[![CI](https://github.com/itspaulin/goomer-api/actions/workflows/checks-backend.yml/badge.svg)](https://github.com/itspaulin/goomer-api/actions/workflows/checks-backend.yml)
+
 API para gerenciamento de produtos, promoções e cardápios de restaurantes, desenvolvida como parte do desafio técnico da Goomer.
 
 ---
@@ -14,6 +16,7 @@ API para gerenciamento de produtos, promoções e cardápios de restaurantes, de
 - [Instalação e Execução](#instalação-e-execução)
 - [Documentação da API](#documentação-da-api)
 - [Testes](#testes)
+- [CI/CD](#cicd)
 - [Desafios e Soluções](#desafios-e-soluções)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Docker](#docker)
@@ -28,24 +31,24 @@ A Goomer Menu API é uma aplicação backend robusta que permite restaurantes ge
 
 ### Funcionalidades Principais
 
-- [ ] CRUD Completo de Produtos
-  - [ ] Criação, listagem, atualização e exclusão
-  - [ ] Controle de visibilidade (produtos podem ser ocultados sem exclusão)
-  - [ ] Ordenação customizável no cardápio
-- [ ] CRUD Completo de Promoções
-  - [ ] Vinculação de promoções a produtos específicos
-  - [ ] Definição de dias da semana e horários ativos
-  - [ ] Validação de preço promocional (deve ser menor que o preço original)
-- [ ] Cardápio Consolidado
-  - [ ] Retorna apenas produtos visíveis
-  - [ ] Aplica promoções ativas baseadas em dia/horário
-  - [ ] Organizado por categorias
-  - [ ] Suporte a múltiplos timezones
+- [x] CRUD Completo de Produtos
+  - [x] Criação, listagem, atualização e exclusão
+  - [x] Controle de visibilidade (produtos podem ser ocultados sem exclusão)
+  - [x] Ordenação customizável no cardápio
+- [x] CRUD Completo de Promoções
+  - [x] Vinculação de promoções a produtos específicos
+  - [x] Definição de dias da semana e horários ativos
+  - [x] Validação de preço promocional (deve ser menor que o preço original)
+- [x] Cardápio Consolidado
+  - [x] Retorna apenas produtos visíveis
+  - [x] Aplica promoções ativas baseadas em dia/horário
+  - [x] Organizado por categorias
+  - [x] Suporte a múltiplos timezones
 
 ### Opcionais
 
-- [ ] Ordenação de Produtos: Controle total sobre a ordem de exibição no cardápio
-- [ ] Tratamento de Timezone: Suporte para restaurantes em diferentes fusos horários
+- [x] Ordenação de Produtos: Controle total sobre a ordem de exibição no cardápio
+- [x] Tratamento de Timezone: Suporte para restaurantes em diferentes fusos horários
 
 ### Melhorias Futuras
 
@@ -86,6 +89,7 @@ A Goomer Menu API é uma aplicação backend robusta que permite restaurantes ge
 
 - **[Docker](https://www.docker.com/)** - Containerização
 - **[Docker Compose](https://docs.docker.com/compose/)** - Orquestração de containers
+- **[GitHub Actions](https://github.com/features/actions)** - CI/CD automatizado
 
 ---
 
@@ -163,7 +167,7 @@ src/
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/goomer-api.git
+git clone https://github.com/itspaulin/goomer-api.git
 cd goomer-api
 ```
 
@@ -301,16 +305,28 @@ Os horários seguem o formato `HH:mm` com intervalos de **15 minutos**:
 
 O projeto possui cobertura de testes unitários e de integração (E2E).
 
+### Executar todos os testes
+
+```bash
+bun test:all
+```
+
 ### Executar testes unitários
 
 ```bash
-bun run test:unit
+bun test:unit
 ```
 
 ### Executar testes E2E
 
 ```bash
-bun run test:e2e
+bun test:e2e
+```
+
+### Executar com coverage
+
+```bash
+bun test:coverage
 ```
 
 ### Estrutura de Testes
@@ -325,6 +341,247 @@ test/
     ├── promotions.test.ts
     └── menu.test.ts
 ```
+
+---
+
+## CI/CD
+
+O projeto utiliza **GitHub Actions** para automação de testes e validações em cada Pull Request.
+
+### Pipeline de CI
+
+O workflow `.github/workflows/checks-backend.yml` é executado automaticamente quando:
+
+- Um Pull Request é aberto ou atualizado
+- Há alterações em arquivos dentro de `src/`
+- Há alterações em `package.json`, `bun.lock`, `docker-compose.yml` ou `Dockerfile`
+- O workflow é executado manualmente via `workflow_dispatch`
+
+### Arquitetura do Workflow
+
+O pipeline é dividido em **3 jobs principais** que rodam em paralelo (com dependências):
+
+```
+Setup (job base)
+├── Build Check (depende de Setup)
+└── Tests (depende de Setup)
+```
+
+#### 1. **Setup Job**
+
+Prepara o ambiente e instala dependências:
+
+- Checkout do código
+- Instalação do Bun 1.3.1
+- Cache de dependências do Bun
+- Instalação de dependências com `--frozen-lockfile`
+
+**Por que usar cache?**
+O cache reduz significativamente o tempo de execução do workflow, evitando reinstalar todas as dependências a cada execução.
+
+#### 2. **Build Check Job**
+
+Valida a integridade do código:
+
+- Type checking com TypeScript
+- Garante que não há erros de tipagem
+- Falha se houver erros de compilação
+
+**Objetivo**: Capturar erros de tipo antes de rodar os testes, economizando tempo.
+
+#### 3. **Tests Job**
+
+Executa toda a suite de testes em um ambiente isolado:
+
+**Configuração do ambiente:**
+
+```yaml
+env:
+  DATABASE_URL: postgresql://goomer:goomer@localhost:5432/goomer
+  NODE_ENV: test
+  PORT: 3333
+```
+
+**Etapas:**
+
+1. **Inicia PostgreSQL com Docker Compose**
+
+```bash
+   docker compose up -d db
+```
+
+2. **Aguarda o banco estar pronto**
+
+```bash
+   timeout 60s bash -c 'until docker compose exec -T db pg_isready -U goomer -d goomer; do sleep 2; done'
+```
+
+- Timeout de 60 segundos
+- Verifica a cada 2 segundos se o banco está aceitando conexões
+- Usa `pg_isready` para validação
+
+3. **Executa migrations**
+
+```bash
+   bun run migrate
+```
+
+- Garante que o schema do banco está atualizado
+- Necessário antes de rodar os testes
+
+4. **Roda testes unitários**
+
+```bash
+   bun test
+```
+
+5. **Roda testes E2E**
+
+```bash
+   bun test:e2e
+```
+
+6. **Cleanup (sempre executa)**
+
+```bash
+   docker compose down -v
+```
+
+- Remove containers e volumes
+- Garante ambiente limpo para próxima execução
+- Executa mesmo se os testes falharem (`if: always()`)
+
+### Estratégias de Otimização
+
+#### **Concurrency Control**
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+```
+
+- Cancela workflows anteriores do mesmo PR que ainda estão rodando
+- Economiza recursos e tempo de execução
+- Útil quando há múltiplos commits em sequência
+
+#### **Cache de Dependências**
+
+```yaml
+- name: Restore Bun cache
+  uses: actions/cache@v4
+  with:
+    path: ~/.bun/install/cache
+    key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+    restore-keys: |
+      ${{ runner.os }}-bun-
+```
+
+**Como funciona:**
+
+- Gera uma chave única baseada no `bun.lock`
+- Se o lockfile não mudou, restaura cache anterior
+- Reduz tempo de instalação de ~30s para ~5s
+
+#### **Jobs em Paralelo com Dependências**
+
+```yaml
+build:
+  needs: setup
+
+test:
+  needs: setup
+```
+
+- `Build` e `Tests` rodam em paralelo
+- Ambos dependem apenas do `Setup`
+- Reduz tempo total de execução
+
+### Triggers e Paths
+
+O workflow só roda quando há mudanças relevantes:
+
+```yaml
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "package.json"
+      - "bun.lock"
+      - "docker-compose.yml"
+      - "Dockerfile"
+```
+
+**Vantagens:**
+
+- Não roda em mudanças no README ou arquivos de documentação
+- Economiza minutos de Actions
+- Feedback mais rápido para mudanças relevantes
+
+### Validação de Lockfile
+
+```bash
+bun install --frozen-lockfile
+```
+
+**Por que `--frozen-lockfile`?**
+
+- Garante que o `bun.lock` está sincronizado com `package.json`
+- Previne instalações inconsistentes entre ambientes
+- Falha se alguém esqueceu de commitar o lockfile atualizado
+- Boa prática para builds reproduzíveis
+
+### Monitoramento e Debugging
+
+Cada step do workflow pode ser inspecionado:
+
+1. **Logs detalhados**: Clique em qualquer job para ver logs completos
+2. **Artifacts**: Possibilidade de salvar arquivos gerados (não configurado ainda)
+3. **Annotations**: Erros aparecem diretamente nos arquivos no PR
+4. **Status badges**: Badge no README mostra status atual do CI
+
+### Melhorias Futuras no CI/CD
+
+Possíveis expansões do workflow:
+
+- **Code Coverage Reports**: Upload de relatórios de cobertura para Codecov
+- **Linting**: Adicionar job de lint com ESLint/Biome
+- **Security Scanning**: Análise de vulnerabilidades com Snyk ou Dependabot
+- **Performance Tests**: Testes de carga e performance
+- **Deploy Automático**: CD para staging/production após merge
+- **Notifications**: Integração com Slack/Discord para notificar falhas
+- **Matrix Strategy**: Testar em múltiplas versões do Bun/Node
+- **Docker Build**: Build e push de imagens Docker para registry
+
+### Comandos Úteis para Debug
+
+Se um workflow falhar, você pode reproduzir localmente:
+
+```bash
+# Simular ambiente de CI localmente
+docker compose up -d db
+bun install --frozen-lockfile
+bun run migrate
+bun test
+bun test:e2e
+docker compose down -v
+```
+
+### Proteção de Branches
+
+Para garantir qualidade, é recomendado configurar branch protection:
+
+**GitHub → Settings → Branches → Add rule:**
+
+- [x] Require status checks to pass before merging
+- [x] Require branches to be up to date before merging
+- [x] Status checks: `Setup`, `Build Check`, `Tests`
+
+Isso impede merge de código que:
+
+- Não compila
+- Falha em testes
+- Tem lockfile desatualizado
 
 ---
 
@@ -389,12 +646,26 @@ const currentTime = now.toFormat("HH:mm");
 - Lógica de validação no use case `GetMenuUseCase`
 - Comparação de dia e horário considerando timezone
 
+### 6. CI/CD com Bun e Docker
+
+**Desafio**: Configurar pipeline de CI que roda testes com banco de dados real.
+
+**Solução**:
+
+- Uso do GitHub Actions com Docker Compose
+- Versionamento correto do Bun (1.3.1)
+- Strategy de cache para otimizar tempo de build
+- Validação com `--frozen-lockfile` para garantir consistência
+
 ---
 
 ## Estrutura do Projeto
 
 ```
 goomer-api/
+├── .github/
+│   └── workflows/
+│       └── checks-backend.yml
 ├── drizzle/
 ├── scripts/
 ├── src/
@@ -427,18 +698,30 @@ O `docker-compose.yml` configura:
    - Password: `goomer`
    - Database: `goomer`
 
-2. **Adminer** (porta 8080)
-   - Interface web para gerenciar o banco
-   - Acesse: `http://localhost:8080`
+2. **API** (porta 3333)
+   - Roda automaticamente migrations
+   - Hot reload habilitado
 
 ### Comandos Úteis
 
 ```bash
+# Subir todos os serviços
 docker-compose up -d
+
+# Ver logs em tempo real
 docker-compose logs -f
+
+# Parar serviços
 docker-compose down
+
+# Parar e remover volumes (limpa banco)
 docker-compose down -v
+
+# Rebuild da imagem
 docker-compose up --build
+
+# Executar comando no container
+docker-compose exec api bun test
 ```
 
 ---
@@ -459,20 +742,29 @@ docker-compose up --build
 ### Commits
 
 - Commits pequenos e descritivos
-- Conventional Commits (feat, fix, docs, etc.)
+- Conventional Commits (feat, fix, docs, chore, test, ci)
 - Mensagens em português
 
 ### Code Style
 
-- ESLint e Prettier configurados
+- TypeScript strict mode habilitado
 - Nomenclatura clara e descritiva
 - Separação de responsabilidades
+- Princípios SOLID aplicados
 
 ### Segurança
 
 - Validação de entrada com Zod
 - Prepared statements (proteção contra SQL injection)
 - Variáveis de ambiente para dados sensíveis
+- Validações em camadas (controller + use case + entity)
+
+### CI/CD
+
+- Testes automatizados em cada PR
+- Validação de lockfile para builds reproduzíveis
+- Cache de dependências para otimização
+- Ambiente isolado com Docker para testes
 
 ---
 
@@ -485,3 +777,5 @@ Este projeto foi desenvolvido como parte de um desafio técnico.
 ## Autor
 
 Desenvolvido por **Paulo Barbosa** como parte do desafio técnico da Goomer.
+
+- GitHub: [@itspaulin](https://github.com/itspaulin)
