@@ -1,5 +1,9 @@
 name: "Pull Request: Checks"
 
+on:
+  pull_request:
+  workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -67,7 +71,7 @@ jobs:
 
   test:
     name: Tests
-    needs: setup
+    needs: [setup, build]
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://goomer:goomer@localhost:5432/goomer
