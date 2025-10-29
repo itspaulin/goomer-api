@@ -1,10 +1,10 @@
-# 🍽️ Goomer Menu API
+# Goomer Menu API
 
 API para gerenciamento de produtos, promoções e cardápios de restaurantes, desenvolvida como parte do desafio técnico da Goomer.
 
 ---
 
-## 📋 Índice
+## Índice
 
 - [Sobre o Projeto](#sobre-o-projeto)
 - [Funcionalidades](#funcionalidades)
@@ -22,38 +22,46 @@ API para gerenciamento de produtos, promoções e cardápios de restaurantes, de
 
 ---
 
-## 🎯 Sobre o Projeto
+## Sobre o Projeto
 
 A Goomer Menu API é uma aplicação backend robusta que permite restaurantes gerenciarem seus produtos, promoções e cardápios de forma eficiente. O projeto foi desenvolvido seguindo princípios de Clean Architecture e Domain-Driven Design (DDD), garantindo alta manutenibilidade e escalabilidade.
 
 ### Funcionalidades Principais
 
-- ✅ **CRUD Completo de Produtos**
-  - Criação, listagem, atualização e exclusão
-  - Controle de visibilidade (produtos podem ser ocultados sem exclusão)
-  - Ordenação customizável no cardápio
-- ✅ **CRUD Completo de Promoções**
-  - Vinculação de promoções a produtos específicos
-  - Definição de dias da semana e horários ativos
-  - Validação de preço promocional (deve ser menor que o preço original)
-- ✅ **Cardápio Consolidado**
-  - Retorna apenas produtos visíveis
-  - Aplica promoções ativas baseadas em dia/horário
-  - Organizado por categorias
-  - Suporte a múltiplos timezones
+- [ ] CRUD Completo de Produtos
+  - [ ] Criação, listagem, atualização e exclusão
+  - [ ] Controle de visibilidade (produtos podem ser ocultados sem exclusão)
+  - [ ] Ordenação customizável no cardápio
+- [ ] CRUD Completo de Promoções
+  - [ ] Vinculação de promoções a produtos específicos
+  - [ ] Definição de dias da semana e horários ativos
+  - [ ] Validação de preço promocional (deve ser menor que o preço original)
+- [ ] Cardápio Consolidado
+  - [ ] Retorna apenas produtos visíveis
+  - [ ] Aplica promoções ativas baseadas em dia/horário
+  - [ ] Organizado por categorias
+  - [ ] Suporte a múltiplos timezones
 
-### Funcionalidades Opcionais Implementadas
+### Opcionais
 
-- ✅ **Ordenação de Produtos**: Controle total sobre a ordem de exibição no cardápio
-- ✅ **Tratamento de Timezone**: Suporte para restaurantes em diferentes fusos horários
+- [ ] Ordenação de Produtos: Controle total sobre a ordem de exibição no cardápio
+- [ ] Tratamento de Timezone: Suporte para restaurantes em diferentes fusos horários
+
+### Melhorias Futuras
+
+- Sistema de cupons de desconto
+- Integração com S3 para upload de imagens de produtos
+- Melhor gerenciamento de promoções (promoções em cascata, promoções combinadas, promoções por categoria)
+- Autenticação e autorização
+- Sistema de notificações para promoções ativas
 
 ---
 
-## 🚀 Tecnologias
+## Tecnologias
 
 ### Core
 
-- **[Bun](https://bun.sh/)** - Runtime JavaScript/TypeScript de alta performance
+- **[Bun](https://bun.sh/)** - Package manager de alta performance
 - **[TypeScript](https://www.typescriptlang.org/)** - Tipagem estática
 - **[Express](https://expressjs.com/)** - Framework web minimalista
 
@@ -61,7 +69,7 @@ A Goomer Menu API é uma aplicação backend robusta que permite restaurantes ge
 
 - **[PostgreSQL](https://www.postgresql.org/)** - Banco de dados relacional
 - **[Drizzle ORM](https://orm.drizzle.team/)** - ORM TypeScript-first com suporte a SQL puro
-- **SQL Raw** - Queries implementadas em SQL puro (requisito do desafio)
+- **SQL Raw** - Queries implementadas em SQL puro
 
 ### Validação e Documentação
 
@@ -81,45 +89,45 @@ A Goomer Menu API é uma aplicação backend robusta que permite restaurantes ge
 
 ---
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 O projeto segue os princípios de **Clean Architecture** e **Domain-Driven Design (DDD)**, organizando o código em camadas bem definidas:
 
 ```
 src/
-├── core/                    # Entidades base e utilitários
-│   ├── entities/           # Classes base para entidades
-│   ├── errors/             # Erros customizados
-│   └── types/              # Either (Result pattern)
+├── core/
+│   ├── entities/
+│   ├── errors/
+│   └── types/
 │
-├── domain/                  # Camada de domínio (regras de negócio)
+├── domain/
 │   ├── application/
-│   │   ├── repositories/   # Interfaces dos repositórios
-│   │   └── use-cases/      # Casos de uso da aplicação
+│   │   ├── repositories/
+│   │   └── use-cases/
 │   └── enterprise/
-│       └── entities/       # Entidades de domínio
+│       └── entities/
 │
-└── infra/                   # Camada de infraestrutura
-    ├── config/             # Configurações (env, swagger)
-    ├── database/           # Conexão e schemas do banco
-    ├── drizzle/            # Migrations e schemas Drizzle
-    ├── factories/          # Factories para injeção de dependência
-    ├── http/               # Camada HTTP
-    │   ├── controllers/    # Controllers
-    │   ├── presenters/     # Formatação de respostas
-    │   ├── routes/         # Definição de rotas
-    │   └── schemas/        # Validação de requisições (Zod)
-    ├── providers/          # Providers externos
-    └── repositories/       # Implementações dos repositórios
+└── infra/
+    ├── config/
+    ├── database/
+    ├── drizzle/
+    ├── factories/
+    ├── http/
+    │   ├── controllers/
+    │   ├── presenters/
+    │   ├── routes/
+    │   └── schemas/
+    ├── providers/
+    └── repositories/
 ```
 
 ### Decisões Técnicas
 
 #### Por que Bun?
 
-- **Performance**: Bun é significativamente mais rápido que Node.js
-- **Versatilidade**: Runtime, bundler, test runner e package manager em uma única ferramenta
-- **Developer Experience**: Melhor DX com execução direta de TypeScript
+- **Performance**: Bun é significativamente mais rápido que npm/yarn
+- **Versatilidade**: Package manager completo e eficiente
+- **Developer Experience**: Melhor DX com instalação e execução mais rápidas
 
 #### Por que Express?
 
@@ -135,14 +143,14 @@ src/
 
 #### Por que Drizzle ORM?
 
-- **SQL Puro**: Permite escrever queries em SQL raw (requisito do desafio)
+- **SQL Puro**: Permite escrever queries em SQL raw
 - **Type Safety**: Tipagem forte e inferência de tipos
 - **Migrations**: Sistema de migrations integrado
 - **Performance**: Overhead mínimo comparado a outros ORMs
 
 ---
 
-## 📦 Pré-requisitos
+## Pré-requisitos
 
 - [Bun](https://bun.sh/) >= 1.0
 - [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/)
@@ -150,7 +158,7 @@ src/
 
 ---
 
-## 🔧 Instalação e Execução
+## Instalação e Execução
 
 ### 1. Clone o repositório
 
@@ -170,14 +178,9 @@ bun install
 Crie um arquivo `.env` na raiz do projeto:
 
 ```env
-# Database
 DATABASE_URL=postgresql://goomer:goomer@localhost:5432/goomer
-
-# Server
 PORT=3333
 NODE_ENV=development
-
-# Documentation
 ENABLE_DOCS=true
 ```
 
@@ -216,7 +219,7 @@ http://localhost:3333/api-docs
 
 ---
 
-## 📚 Documentação da API
+## Documentação da API
 
 A API possui documentação interativa completa com Swagger/OpenAPI.
 
@@ -282,8 +285,8 @@ curl "http://localhost:3333/menu?timezone=America/Sao_Paulo"
 
 Os horários seguem o formato `HH:mm` com intervalos de **15 minutos**:
 
-- ✅ Válidos: `18:00`, `18:15`, `18:30`, `18:45`
-- ❌ Inválidos: `18:10`, `18:20`, `18:05`
+- Válidos: `18:00`, `18:15`, `18:30`, `18:45`
+- Inválidos: `18:10`, `18:20`, `18:05`
 
 ### Categorias de Produtos
 
@@ -294,17 +297,17 @@ Os horários seguem o formato `HH:mm` com intervalos de **15 minutos**:
 
 ---
 
-## 🧪 Testes
+## Testes
 
 O projeto possui cobertura de testes unitários e de integração (E2E).
 
-### Executar apenas testes unitários
+### Executar testes unitários
 
 ```bash
-bun run test
+bun run test:unit
 ```
 
-### Executar apenas testes E2E
+### Executar testes E2E
 
 ```bash
 bun run test:e2e
@@ -314,18 +317,18 @@ bun run test:e2e
 
 ```
 test/
-├── unit/                   # Testes unitários
-│   ├── use-cases/         # Testes de casos de uso
-│   └── entities/          # Testes de entidades
-└── e2e/                    # Testes de integração
-    ├── products.test.ts   # Testes de produtos
-    ├── promotions.test.ts # Testes de promoções
-    └── menu.test.ts       # Testes de cardápio
+├── unit/
+│   ├── use-cases/
+│   └── entities/
+└── e2e/
+    ├── products.test.ts
+    ├── promotions.test.ts
+    └── menu.test.ts
 ```
 
 ---
 
-## 🎯 Desafios e Soluções
+## Desafios e Soluções
 
 ### 1. Validação de Horários com Intervalos de 15 minutos
 
@@ -364,7 +367,7 @@ const currentTime = now.toFormat("HH:mm");
 
 - Uso do Drizzle ORM que suporta SQL raw
 - Criação de mappers para converter entre domínio e banco de dados
-- Type casting quando necessário: `(result as any[]).map(...)`
+- Type casting quando necessário
 
 ### 4. Configuração do Docker vs Servidor Local
 
@@ -374,7 +377,7 @@ const currentTime = now.toFormat("HH:mm");
 
 - Implementação de tratamento de erro `EADDRINUSE`
 - Mensagens claras sobre portas ocupadas
-- Script para verificar processos: `netstat -ano | findstr :3333`
+- Script para verificar processos
 
 ### 5. Estrutura de Promoções Complexa
 
@@ -388,31 +391,31 @@ const currentTime = now.toFormat("HH:mm");
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 goomer-api/
-├── drizzle/                 # Migrations do Drizzle
-├── scripts/                 # Scripts utilitários
+├── drizzle/
+├── scripts/
 ├── src/
-│   ├── core/               # Entidades base
-│   ├── domain/             # Regras de negócio
-│   └── infra/              # Implementações
-├── test/                    # Testes
-├── .env.example            # Exemplo de variáveis de ambiente
-├── docker-compose.yml      # Configuração Docker
-├── Dockerfile              # Imagem Docker da aplicação
-├── drizzle.config.ts       # Configuração Drizzle ORM
-├── package.json            # Dependências
-├── tsconfig.json           # Configuração TypeScript
-├── vite.config.ts          # Configuração Vitest (unit)
-├── vite.config.e2e.ts      # Configuração Vitest (e2e)
-└── README.md               # Este arquivo
+│   ├── core/
+│   ├── domain/
+│   └── infra/
+├── test/
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
+├── drizzle.config.ts
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── vite.config.e2e.ts
+└── README.md
 ```
 
 ---
 
-## 🐳 Docker
+## Docker
 
 ### Serviços Disponíveis
 
@@ -431,36 +434,27 @@ O `docker-compose.yml` configura:
 ### Comandos Úteis
 
 ```bash
-# Subir serviços
 docker-compose up -d
-
-# Ver logs
 docker-compose logs -f
-
-# Parar serviços
 docker-compose down
-
-# Parar e remover volumes
 docker-compose down -v
-
-# Rebuild da aplicação
 docker-compose up --build
 ```
 
 ---
 
-## 🔐 Variáveis de Ambiente
+## Variáveis de Ambiente
 
 | Variável       | Descrição                      | Padrão        | Obrigatório |
 | -------------- | ------------------------------ | ------------- | ----------- |
-| `DATABASE_URL` | URL de conexão PostgreSQL      | -             | ✅          |
-| `PORT`         | Porta do servidor              | `3333`        | ❌          |
-| `NODE_ENV`     | Ambiente de execução           | `development` | ❌          |
-| `ENABLE_DOCS`  | Habilitar documentação Swagger | `true`        | ❌          |
+| `DATABASE_URL` | URL de conexão PostgreSQL      | -             | Sim         |
+| `PORT`         | Porta do servidor              | `3333`        | Não         |
+| `NODE_ENV`     | Ambiente de execução           | `development` | Não         |
+| `ENABLE_DOCS`  | Habilitar documentação Swagger | `true`        | Não         |
 
 ---
 
-## 📊 Padrões e Boas Práticas
+## Padrões e Boas Práticas
 
 ### Commits
 
@@ -480,16 +474,14 @@ docker-compose up --build
 - Prepared statements (proteção contra SQL injection)
 - Variáveis de ambiente para dados sensíveis
 
-## 📝 Licença
+---
+
+## Licença
 
 Este projeto foi desenvolvido como parte de um desafio técnico.
 
 ---
 
-## 👤 Autor
+## Autor
 
 Desenvolvido por **Paulo Barbosa** como parte do desafio técnico da Goomer.
-
----
-
-⭐ Desenvolvido com Bun, TypeScript e ❤️
