@@ -35,7 +35,6 @@ describe("CreateProductUseCase", () => {
   });
 
   it("não deve ser possível criar um produto com nome duplicado", async () => {
-    // Criar primeiro produto
     await sut.execute({
       name: "Pizza Margherita",
       price: 45.9,
@@ -44,7 +43,6 @@ describe("CreateProductUseCase", () => {
       order: 1,
     });
 
-    // Tentar criar produto com mesmo nome
     const result = await sut.execute({
       name: "Pizza Margherita",
       price: 50.0,

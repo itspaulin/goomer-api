@@ -8,14 +8,7 @@
     "dev": "nodemon --exec bun src/infra/main.ts",
     "migrate": "bunx drizzle-kit generate && bunx drizzle-kit push",
     "test": "node scripts/test-all.js",
-    "test:unit": "vitest --config vite.config.ts",
-    "test:e2e": "vitest --config vite.config.e2e.ts",
-    "test:unit:run": "vitest run --config vite.config.ts",
-    "test:e2e:run": "vitest run --config vite.config.e2e.ts",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "test:coverage:unit": "vitest --coverage --config vite.config.ts",
-    "test:coverage:e2e": "vitest --coverage --config vite.config.e2e.ts"
+    "test:e2e": "vitest --config vite.config.e2e.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
