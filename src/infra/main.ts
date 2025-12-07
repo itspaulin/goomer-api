@@ -1,5 +1,5 @@
 import { env } from "@/infra/config/env";
-import { app } from "./http/app";
+import { app } from "./http/app"
 
 app
   .listen(env.PORT, () => {
